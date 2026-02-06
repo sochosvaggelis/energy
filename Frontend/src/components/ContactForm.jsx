@@ -97,7 +97,7 @@ export default function ContactForm({ lightningOn }) {
                     xOffset={0}
                     speed={.5}
                     intensity={0.6}
-                    size={1}
+                    size={2}
                 />
             )}
             <div className="form-content">
