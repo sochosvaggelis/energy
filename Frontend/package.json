@@ -6,7 +6,7 @@
   "scripts": {
     "fetch-prices": "python ../GetData/index.py && python ../GetData/build_frontend_data.py",
     "dev": "python ../GetData/index.py && python ../GetData/build_frontend_data.py && vite",
-    "build": "python ../GetData/index.py && python ../GetData/build_frontend_data.py && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
