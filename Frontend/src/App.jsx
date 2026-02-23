@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import { supabase } from './lib/supabase'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import Features from './components/Features'
@@ -27,17 +28,38 @@ function App() {
     nightTariff: '',
     socialTariff: '',
     provider: '',
-    kwhConsumption: 0
+    kwhConsumption: 0,
+    nightKwhConsumption: 0
   })
 
+  const [formSubmitted, setFormSubmitted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pricesData, setPricesData] = useState([])
 
   useEffect(() => {
-    fetch('/data/prices.json')
-      .then(res => res.json())
-      .then(data => setPricesData(data))
-      .catch(err => console.error('Failed to load prices:', err))
+    async function loadPrices() {
+      const { data, error } = await supabase
+        .from('plans')
+        .select('*, providers(name)')
+
+      if (error) {
+        console.error('Failed to load prices:', error)
+        return
+      }
+
+      const flat = data.map(plan => ({
+        provider: plan.providers.name,
+        adjustment_factor: plan.providers.adjustment_factor,
+        plan: plan.plan_name,
+        tariff_type: plan.tariff_type,
+        price_per_kwh: plan.price_per_kwh,
+        night_price_per_kwh: plan.night_price_per_kwh,
+        monthly_fee_eur: plan.monthly_fee_eur,
+        social_tariff: plan.social_tariff
+      }))
+      setPricesData(flat)
+    }
+    loadPrices()
   }, [])
 
   useEffect(() => {
@@ -46,11 +68,21 @@ function App() {
   }, [darkMode])
 
   const scrollToForm = () => {
-    document.querySelector('.form-card').scrollIntoView({
+    document.querySelector('.form-card')?.scrollIntoView({
       behavior: 'smooth',
       block: 'center'
     })
   }
+
+  useEffect(() => {
+    if (sidebarOpen) {
+      scrollToForm()
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [sidebarOpen])
 
   const handleCtaClick = () => {
     scrollToForm()
@@ -61,8 +93,8 @@ function App() {
       <div className="bg-pattern"></div>
       <div className="grid-overlay"></div>
 
-      <Nav onCtaClick={handleCtaClick} />
-      <Hero formData={formData} setFormData={setFormData} />
+      <Nav onCtaClick={handleCtaClick} sidebarOpen={sidebarOpen} onSidebarToggle={() => setSidebarOpen(prev => !prev)} />
+      <Hero formData={formData} setFormData={setFormData} onFormSubmit={() => { setFormSubmitted(true); setSidebarOpen(true) }} />
       <Features />
       <HowItWorks />
       <Testimonials />
@@ -75,6 +107,8 @@ function App() {
         pricesData={pricesData}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(prev => !prev)}
+        formSubmitted={formSubmitted}
+        onGoToForm={scrollToForm}
       />
       <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode(prev => !prev)} />
     </>

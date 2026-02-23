@@ -5,7 +5,7 @@ import ProviderInfo from './formSteps/ProviderInfo'
 import Lightning from './LighitngBackground'
 import './styles/ContactForm.css'
 
-export default function ContactForm({ formData, setFormData }) {
+export default function ContactForm({ formData, setFormData, onFormSubmit }) {
     const [activeService, setActiveService] = useState('electricity')
     const [toggleOpen, setToggleOpen] = useState(false)
     const [basicInfo, setBasicInfo] = useState({})
@@ -31,6 +31,7 @@ export default function ContactForm({ formData, setFormData }) {
         }
         console.log('Form submitted:', data)
         alert('Ευχαριστούμε! Θα σε καλέσουμε σύντομα.')
+        onFormSubmit?.()
     }
 
     const handleBack = () => {
@@ -140,7 +141,7 @@ export default function ContactForm({ formData, setFormData }) {
                             <i className="fa-solid fa-arrow-left"></i>
                         </button>
                     )}
-                    <button type="button" onClick={handleNext} className="next-btn">
+                    <button type={step === 3 ? 'submit' : 'button'} onClick={step !== 3 ? handleNext : undefined} className="next-btn">
                         {step !== 3 ? <i className="fa-solid fa-arrow-right fa-xl"></i> : 'Θέλω να με καλέσετε'}
                     </button>
                 </div>

@@ -41,6 +41,7 @@
   --hover-surface: rgba(255, 255, 255, 0.06);
   --grid-opacity: 0.06;
   --grid-opacity-mobile: 0.08;
+  --nav-height: 60px;
 }
 
 body.light-mode {
@@ -82,15 +83,45 @@ body.light-mode {
 
 html {
   scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 6px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--bg-body);
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
   transition: background 0.3s ease, color 0.3s ease;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+
+body::-webkit-scrollbar {
+  width: 3px;
+}
+
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 3px;
 }
 
 /* Animated Background */

@@ -52,7 +52,7 @@
 }
 
 .hero h1 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: clamp(1.75rem, 4vw, 3.5rem);
   font-weight: 700;
   line-height: 1.15;
@@ -122,10 +122,6 @@
 
   .hero-text {
     order: 1;
-  }
-
-  .hero-content > .form-card {
-    order: 2;
   }
 
   .hero-description {

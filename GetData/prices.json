@@ -70,13 +70,6 @@
     "monthly_fee_eur": 5.0
   },
   {
-    "provider": "ΗΡΩΝ",
-    "plan": "BLUE GENEROUS HOME 6",
-    "tariff_type": "Σταθερό Τιμολόγιο",
-    "price_per_kwh": 0.10945,
-    "monthly_fee_eur": 9.9
-  },
-  {
     "provider": "NRG",
     "plan": "nrg fixed on time 18M",
     "tariff_type": "Σταθερό Τιμολόγιο",
@@ -89,6 +82,13 @@
     "tariff_type": "Σταθερό Τιμολόγιο",
     "price_per_kwh": 0.124,
     "monthly_fee_eur": 6.9
+  },
+  {
+    "provider": "ΖΕΝΙΘ",
+    "plan": "Power Home Control Plus",
+    "tariff_type": "Σταθερό Τιμολόγιο",
+    "price_per_kwh": 0.115,
+    "monthly_fee_eur": 9.9
   },
   {
     "provider": "ΗΡΩΝ",

@@ -1,91 +1,172 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import './styles/PriceSidebar.css'
 
-export default function PriceSidebar({ formData, setFormData, pricesData, isOpen, onToggle }) {
-  const kWh = formData.kwhConsumption
+// Non-linear slider: 0-500 kWh takes the first half, 500-5000 scales quadratically
+const SLIDER_MAX = 1000
+const SLIDER_BREAK = 500   // slider position where linear zone ends (50% of bar)
+const KWH_BREAK = 500      // kWh value at that break point
+const KWH_MAX = 5000
 
-  // Lock body scroll on mobile when sidebar is open
-  useEffect(() => {
-    if (isOpen && window.innerWidth <= 640) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen])
+function sliderToKwh(sliderVal) {
+  if (sliderVal <= SLIDER_BREAK) {
+    return Math.round(sliderVal * (KWH_BREAK / SLIDER_BREAK))
+  }
+  const t = (sliderVal - SLIDER_BREAK) / (SLIDER_MAX - SLIDER_BREAK)
+  return Math.round(KWH_BREAK + (KWH_MAX - KWH_BREAK) * t * t)
+}
+
+function kwhToSlider(kwh) {
+  if (kwh <= KWH_BREAK) {
+    return kwh * (SLIDER_BREAK / KWH_BREAK)
+  }
+  const t = Math.sqrt((kwh - KWH_BREAK) / (KWH_MAX - KWH_BREAK))
+  return SLIDER_BREAK + t * (SLIDER_MAX - SLIDER_BREAK)
+}
+
+const TARIFF_FILTERS = [
+  { key: 'Σταθερό Τιμολόγιο', label: 'Σταθερό', color: 'blue' },
+  { key: 'Κυμαινόμενο Τιμολόγιο', label: 'Κυμαινόμενο', color: 'yellow' },
+  { key: 'Ειδικό Τιμολόγιο', label: 'Ειδικό', color: 'green' },
+  { key: 'Δυναμικό Τιμολόγιο', label: 'Δυναμικό', color: 'orange' },
+]
+
+const TARIFF_COLOR_MAP = Object.fromEntries(
+  TARIFF_FILTERS.map(f => [f.key, { label: f.label, color: f.color }])
+)
+
+export default function PriceSidebar({ formData, setFormData, pricesData, isOpen, onToggle, formSubmitted, onGoToForm }) {
+  const kWh = formData.kwhConsumption
+  const nightKwh = formData.nightKwhConsumption
+  const [activeFilters, setActiveFilters] = useState(new Set())
+  const [expandedCard, setExpandedCard] = useState(null)
+  const [activeTab, setActiveTab] = useState('charges')
+
+
+  const toggleFilter = (key) => {
+    setActiveFilters(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
 
   const sortedPlans = useMemo(() => {
     if (!pricesData.length || kWh === 0) return []
 
     return pricesData
-      .filter(plan => plan.price_per_kwh !== null)
-      .map(plan => ({
-        ...plan,
-        monthlyCost: plan.price_per_kwh * kWh + (plan.monthly_fee_eur ?? 0)
-      }))
+      .filter(plan => plan.price_per_kwh !== null && plan.price_per_kwh > 0)
+      .filter(plan => activeFilters.size === 0 || activeFilters.has(plan.tariff_type))
+      .map(plan => {
+        const nightRate = plan.night_price_per_kwh ?? plan.price_per_kwh
+        const dayCost = plan.price_per_kwh * (kWh - nightKwh)
+        const nightCost = nightRate * nightKwh
+        return {
+          ...plan,
+          monthlyCost: dayCost + nightCost + (plan.monthly_fee_eur ?? 0)
+        }
+      })
       .sort((a, b) => a.monthlyCost - b.monthlyCost)
-  }, [pricesData, kWh])
+  }, [pricesData, kWh, nightKwh, activeFilters])
 
   return (
     <>
       {/* Backdrop for mobile */}
       {isOpen && <div className="sidebar-backdrop" onClick={onToggle} />}
 
-      {/* Floating toggle button */}
-      <button className="sidebar-toggle-btn" onClick={onToggle} aria-label="Toggle price sidebar">
-        {isOpen ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      {/* Sidebar panel */}
+      <aside className={`price-sidebar ${isOpen ? 'open' : ''}`}>
+        {isOpen && <button className="sidebar-close-btn" type="button" onClick={onToggle} aria-label="Κλείσιμο sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10" />
-            <line x1="12" y1="20" x2="12" y2="4" />
-            <line x1="6" y1="20" x2="6" y2="14" />
-          </svg>
-        )}
-      </button>
-
-      {/* Sidebar panel */}
-      <aside className={`price-sidebar ${isOpen ? 'open' : ''}`}>
+        </button>}
         <div className="sidebar-header">
           <h3>Σύγκριση Τιμών</h3>
-          <label className="sidebar-slider-label">
-            Μηνιαία κατανάλωση:
-          </label>
-          <div className="sidebar-kwh-input-row">
-            <input
-              type="number"
-              min="0"
-              max="5000"
-              value={kWh}
-              onChange={(e) => {
-                const val = Math.max(0, Math.min(5000, Number(e.target.value) || 0))
-                setFormData(prev => ({ ...prev, kwhConsumption: val }))
-              }}
-              className="sidebar-kwh-input"
-            />
-            <span className="sidebar-kwh-unit">kWh</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="5000"
-            step="50"
-            value={kWh}
-            onChange={(e) => setFormData(prev => ({ ...prev, kwhConsumption: Number(e.target.value) }))}
-            className="kwh-slider"
-          />
-          <div className="slider-labels">
-            <span>0</span>
-            <span>2500</span>
-            <span>5000 kWh</span>
-          </div>
+          {formSubmitted && (
+            <>
+              <div className="sidebar-controls-row">
+                <div className="sidebar-controls-left">
+                  <label className="sidebar-slider-label">Ημερήσια κατανάλωση:</label>
+                  <div className="sidebar-kwh-input-row">
+                    <input
+                      type="number"
+                      min="0"
+                      max="5000"
+                      value={kWh}
+                      onChange={(e) => {
+                        const val = Math.max(0, Math.min(5000, Number(e.target.value) || 0))
+                        setFormData(prev => ({ ...prev, kwhConsumption: val }))
+                      }}
+                      className="sidebar-kwh-input"
+                    />
+                    <span className="sidebar-kwh-unit">kWh</span>
+                  </div>
+                </div>
+                <div className="sidebar-controls-left">
+                  <label className="sidebar-slider-label">Νυχτερινή κατανάλωση:</label>
+                  <div className="sidebar-kwh-input-row">
+                    <input
+                      type="number"
+                      min="0"
+                      max="5000"
+                      value={nightKwh}
+                      onChange={(e) => {
+                        const val = Math.max(0, Math.min(5000, Number(e.target.value) || 0))
+                        setFormData(prev => ({ ...prev, nightKwhConsumption: val }))
+                      }}
+                      className="sidebar-kwh-input"
+                    />
+                    <span className="sidebar-kwh-unit">kWh</span>
+                  </div>
+                </div>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max={SLIDER_MAX}
+                step="1"
+                value={kwhToSlider(kWh)}
+                onChange={(e) => {
+                  const val = sliderToKwh(Number(e.target.value))
+                  setFormData(prev => ({ ...prev, kwhConsumption: val }))
+                }}
+                className="kwh-slider"
+              />
+              <div className="slider-labels">
+                <span>0</span>
+                <span>500</span>
+                <span>5000 kWh</span>
+              </div>
+              <div className="tariff-filters">
+                {TARIFF_FILTERS.map(f => (
+                  <button
+                    key={f.key}
+                    className={`tariff-filter-btn tariff-${f.color} ${activeFilters.has(f.key) ? 'active' : ''}`}
+                    onClick={() => toggleFilter(f.key)}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="sidebar-content">
-          {kWh === 0 ? (
+          {!formSubmitted ? (
+            <div className="sidebar-empty">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              <p>Συμπλήρωσε τη φόρμα για να συγκρίνεις τιμές παρόχων</p>
+              <button className="sidebar-goto-form-btn" type="button" onClick={() => { onGoToForm?.(); onToggle() }}>
+                Πήγαινε στη φόρμα
+              </button>
+            </div>
+          ) : kWh === 0 ? (
             <div className="sidebar-empty">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="20" x2="18" y2="10" />
@@ -96,23 +177,98 @@ export default function PriceSidebar({ formData, setFormData, pricesData, isOpen
             </div>
           ) : (
             <div className="plans-list">
-              {sortedPlans.map((plan, index) => (
-                <div
-                  key={`${plan.provider}-${plan.plan}-${index}`}
-                  className={`plan-card ${index < 3 ? 'top-plan' : ''}`}
-                >
-                  <div className="plan-rank">#{index + 1}</div>
-                  <div className="plan-info">
-                    <span className="plan-provider">{plan.provider}</span>
-                    <span className="plan-name">{plan.plan}</span>
-                    <span className="plan-tariff">{plan.tariff_type}</span>
+              {sortedPlans.map((plan, index) => {
+                const tariff = TARIFF_COLOR_MAP[plan.tariff_type]
+                const cardKey = `${plan.provider}-${plan.plan}-${index}`
+                const isExpanded = expandedCard === cardKey
+                return (
+                  <div
+                    key={cardKey}
+                    className={`plan-card ${index < 3 ? 'top-plan' : ''} ${isExpanded ? 'expanded' : ''}`}
+                  >
+                    <div className="plan-card-inner">
+                      <div className="plan-card-content">
+                        <div
+                          className="plan-card-top"
+                          onClick={() => {
+                            setExpandedCard(isExpanded ? null : cardKey)
+                            setActiveTab('charges')
+                          }}
+                        >
+                          <div className="plan-rank">#{index + 1}</div>
+                          <div className="plan-info">
+                            <span className="plan-provider">{plan.provider}</span>
+                            <span className="plan-name">{plan.plan}</span>
+                            {tariff && (
+                              <span className={`plan-tariff-badge tariff-badge-${tariff.color}`}>
+                                {tariff.label}
+                              </span>
+                            )}
+                          </div>
+                          <div className="plan-cost">
+                            <span className="cost-value">{plan.monthlyCost.toFixed(2)}&euro; <span className="cost-label">/μήνα</span></span>
+                          </div>
+                        </div>
+                        <div className="plan-card-bottom">
+                          <div className="plan-details">
+                            <span>{plan.price_per_kwh.toFixed(4)} €/kWh</span>
+                            <span className="plan-detail-sep">·</span>
+                            <span>Πάγιο: {(plan.monthly_fee_eur ?? 0).toFixed(2)}€</span>
+                          </div>
+                          <button className="plan-select-btn" type="button">Με ενδιαφέρει</button>
+                        </div>
+                      </div>
+                      <div className="plan-chevron-col" onClick={() => { setExpandedCard(isExpanded ? null : cardKey); setActiveTab('charges') }}>
+                        <svg className={`plan-chevron ${isExpanded ? 'open' : ''}`} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className={`plan-expanded-wrapper ${isExpanded ? 'open' : ''}`}>
+                      <div className="plan-expanded">
+                        <div className="plan-expanded-tabs">
+                          <button
+                            type="button"
+                            className={`plan-tab-btn ${activeTab === 'charges' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('charges')}
+                          >
+                            Αναλυτική Χρέωση
+                          </button>
+                          <button
+                            type="button"
+                            className={`plan-tab-btn ${activeTab === 'provider' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('provider')}
+                          >
+                            Πληροφορίες Προμηθευτή
+                          </button>
+                        </div>
+                        <div className="plan-expanded-content">
+                          {activeTab === 'charges' ? (
+                            <ul className="plan-charges-list">
+                              <li>
+                                <span className="charge-label">Ημερήσια χρέωση</span>
+                                <span className="charge-value">{plan.price_per_kwh.toFixed(4)} €/kWh</span>
+                              </li>
+                              {plan.night_price_per_kwh != null && (
+                                <li>
+                                  <span className="charge-label">Νυχτερινή χρέωση</span>
+                                  <span className="charge-value">{plan.night_price_per_kwh.toFixed(4)} €/kWh</span>
+                                </li>
+                              )}
+                              <li>
+                                <span className="charge-label">Πάγιο</span>
+                                <span className="charge-value">{(plan.monthly_fee_eur ?? 0).toFixed(2)} €/μήνα</span>
+                              </li>
+                            </ul>
+                          ) : (
+                            <p className="plan-expanded-placeholder">Πληροφορίες προμηθευτή...</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="plan-cost">
-                    <span className="cost-value">{plan.monthlyCost.toFixed(2)}&euro;</span>
-                    <span className="cost-label">/μήνα</span>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

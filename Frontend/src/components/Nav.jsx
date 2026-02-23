@@ -1,6 +1,6 @@
 import './styles/Nav.css'
 
-function Nav({ onCtaClick }) {
+function Nav({ onCtaClick, sidebarOpen, onSidebarToggle }) {
   return (
     <nav>
       <div className="nav-content">
@@ -8,9 +8,14 @@ function Nav({ onCtaClick }) {
           <div className="logo-icon">⚡</div>
           EnergyCompare
         </a>
-        <button className="nav-cta" onClick={onCtaClick}>
-          Ζήτα Προσφορά
-        </button>
+        <div className="nav-actions">
+          <button className="nav-cta" onClick={onCtaClick}>
+            Ζήτα Προσφορά
+          </button>
+          <button className="nav-sidebar-toggle" onClick={onSidebarToggle}>
+            {sidebarOpen ? 'Σύγκρινε τιμές' : 'Σύγκρινε τιμές'}
+          </button>
+        </div>
       </div>
     </nav>
   )

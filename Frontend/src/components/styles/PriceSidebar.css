@@ -1,32 +1,3 @@
-/* Floating toggle button */
-.sidebar-toggle-btn {
-  position: fixed;
-  bottom: 5rem;
-  right: 2rem;
-  z-index: 201;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-  color: var(--midnight);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px var(--accent-glow), 0 2px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.sidebar-toggle-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 28px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.sidebar-toggle-btn:active {
-  transform: scale(0.95);
-}
-
 /* Backdrop (mobile only) */
 .sidebar-backdrop {
   display: none;
@@ -35,24 +6,53 @@
 /* Sidebar panel */
 .price-sidebar {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: 380px;
-  height: 100vh;
+  top: var(--nav-height, 60px);
+  left: 0;
+  width: 50%;
+  height: calc(100vh - var(--nav-height, 60px));
   z-index: 200;
   background: linear-gradient(145deg, var(--bg-surface-start) 0%, var(--bg-surface-end) 100%);
   backdrop-filter: blur(20px);
-  border-left: 1px solid var(--overlay-medium);
-  box-shadow: -8px 0 30px var(--shadow-color);
-  transform: translateX(100%);
+  border-right: 1px solid var(--overlay-medium);
+  box-shadow: 8px 0 30px var(--shadow-color);
+  transform: translateX(-100%);
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .price-sidebar.open {
   transform: translateX(0);
+}
+
+/* Close button – positioned outside the sidebar's right edge */
+.sidebar-close-btn {
+  position: absolute;
+  top: 2rem;
+  right: -52px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  color: var(--midnight);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px var(--accent-glow), 0 0 10px var(--accent-glow);
+  z-index: 1;
+}
+
+.sidebar-close-btn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 6px 28px var(--accent-glow), 0 0 20px var(--accent-glow);
+}
+
+.sidebar-close-btn:active {
+  transform: scale(0.95);
 }
 
 /* Sidebar header */
@@ -63,10 +63,23 @@
 }
 
 .sidebar-header h3 {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 1.25rem;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
+}
+
+.sidebar-controls-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-controls-left {
+  flex-shrink: 0;
 }
 
 .sidebar-slider-label {
@@ -74,14 +87,13 @@
   font-size: 0.85rem;
   color: var(--text-secondary);
   font-weight: 600;
-  margin: 0.75rem 0 0.4rem;
+  margin: 0 0 0.4rem;
 }
 
 .sidebar-kwh-input-row {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  margin-bottom: 0.6rem;
 }
 
 .sidebar-kwh-input {
@@ -91,7 +103,7 @@
   border: 1px solid var(--border-default);
   border-radius: 8px;
   color: var(--text-primary);
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
   text-align: center;
@@ -117,6 +129,114 @@
   font-weight: 600;
 }
 
+/* Tariff filter buttons */
+.tariff-filters {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.tariff-filter-btn {
+  padding: 0.3rem 0.65rem;
+  border-radius: 16px;
+  border: 1.5px solid;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.tariff-filter-btn:hover {
+  filter: brightness(1.2);
+}
+
+.tariff-filter-btn.active {
+  filter: brightness(1.1);
+}
+
+/* Blue - Σταθερό */
+.tariff-blue {
+  color: #3b82f6;
+  border-color: #3b82f6;
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+.tariff-blue.active {
+  background: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
+}
+
+/* Yellow - Κυμαινόμενο */
+.tariff-yellow {
+  color: #eab308;
+  border-color: #eab308;
+  text-shadow: 0 0 8px rgba(234, 179, 8, 0.5);
+}
+.tariff-yellow.active {
+  background: rgba(234, 179, 8, 0.3);
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.5);
+}
+
+/* Green - Ειδικό */
+.tariff-green {
+  color: #22c55e;
+  border-color: #22c55e;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+.tariff-green.active {
+  background: rgba(34, 197, 94, 0.3);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.5);
+}
+
+/* Orange - Δυναμικό */
+.tariff-orange {
+  color: #f97316;
+  border-color: #f97316;
+  text-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
+}
+.tariff-orange.active {
+  background: rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
+}
+
+/* Slider – constrain width on desktop */
+.sidebar-header .kwh-slider {
+  max-width: 280px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Slider labels – position absolutely so 500 aligns with the 50% thumb */
+.sidebar-header .slider-labels {
+  position: relative;
+  height: 1.2em;
+  max-width: 280px;
+  margin: 0.4rem auto 0;
+}
+
+.sidebar-header .slider-labels span {
+  position: absolute;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.sidebar-header .slider-labels span:first-child {
+  left: 0;
+}
+
+.sidebar-header .slider-labels span:nth-child(2) {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.sidebar-header .slider-labels span:last-child {
+  right: 0;
+}
+
 /* Sidebar content */
 .sidebar-content {
   flex: 1;
@@ -135,6 +255,28 @@
   gap: 1rem;
   color: var(--text-muted);
   padding: 2rem;
+}
+
+.sidebar-goto-form-btn {
+  padding: 0.55rem 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.sidebar-goto-form-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.sidebar-goto-form-btn:active {
+  transform: translateY(0);
 }
 
 .sidebar-empty svg {
@@ -157,9 +299,9 @@
 /* Plan card */
 .plan-card {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.85rem 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
   background: var(--overlay-faint);
   border: 1px solid var(--overlay-medium);
   border-radius: 12px;
@@ -177,13 +319,20 @@
   box-shadow: 0 0 0 1px var(--accent-glow);
 }
 
+/* Top row: rank + info + cost */
+.plan-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 /* Rank */
 .plan-rank {
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.85rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--accent);
-  min-width: 28px;
+  min-width: 32px;
   text-align: center;
   flex-shrink: 0;
 }
@@ -193,12 +342,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: 0.15rem;
   min-width: 0;
 }
 
 .plan-provider {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -207,16 +356,48 @@
 }
 
 .plan-name {
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.plan-tariff {
-  font-size: 0.65rem;
-  color: var(--text-faint);
+/* Tariff badge – matches filter buttons */
+.plan-tariff-badge {
+  display: inline-block;
+  width: fit-content;
+  padding: 0.3rem 0.65rem;
+  border-radius: 16px;
+  border: 1.5px solid;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.tariff-badge-blue {
+  color: #3b82f6;
+  border-color: #3b82f6;
+  text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.tariff-badge-yellow {
+  color: #eab308;
+  border-color: #eab308;
+  text-shadow: 0 0 8px rgba(234, 179, 8, 0.5);
+}
+
+.tariff-badge-green {
+  color: #22c55e;
+  border-color: #22c55e;
+  text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+.tariff-badge-orange {
+  color: #f97316;
+  border-color: #f97316;
+  text-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
 }
 
 /* Cost */
@@ -226,21 +407,214 @@
 }
 
 .cost-value {
-  display: block;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 1.05rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.cost-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+/* Bottom row: details + button */
+.plan-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: calc(32px + 0.75rem); /* align with plan-info (rank width + gap) */
+}
+
+.plan-details {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.plan-detail-sep {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.plan-select-btn {
+  padding: 0.4rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.plan-select-btn:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.plan-select-btn:active {
+  transform: translateY(0);
+}
+
+/* Expandable card */
+.plan-card-top {
+  cursor: pointer;
+}
+
+/* Inner layout: content + chevron side by side */
+.plan-card-inner {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.plan-card-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plan-chevron-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  flex-shrink: 0;
+  cursor: pointer;
+  /* border-left: 1px solid var(--overlay-medium); */
+  margin: -1rem -1.25rem -1rem 0;
+  padding: 0 0.5rem;
+  margin-left: 1rem;
+  transition: background 0.2s ease;
+  border-radius: 0 11px 11px 0;
+}
+
+.plan-chevron {
+  color: var(--text-muted);
+  transition: transform 0.3s ease, color 0.2s ease;
+}
+
+.plan-card:hover .plan-chevron {
+  color: var(--accent);
+}
+
+.plan-chevron.open {
+  transform: rotate(180deg);
+}
+
+.plan-card.expanded {
+  border-color: var(--accent);
+}
+
+/* Expanded section */
+.plan-expanded-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.plan-expanded-wrapper.open {
+  grid-template-rows: 1fr;
+}
+
+.plan-expanded {
+  overflow: hidden;
+}
+
+.plan-expanded-wrapper.open .plan-expanded {
+  border-top: 1px solid var(--overlay-medium);
+  margin-top: 0.35rem;
+  padding-top: 0.6rem;
+}
+
+.plan-expanded-tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.plan-tab-btn {
+  flex: 1;
+  padding: 0.45rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--overlay-medium);
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.plan-tab-btn:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-medium);
+}
+
+.plan-tab-btn.active {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.plan-expanded-content {
+  padding: 0.5rem;
+  min-height: 60px;
+}
+
+.plan-expanded-placeholder {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.plan-charges-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plan-charges-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background: var(--overlay-faint);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+
+.charge-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.charge-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
-.cost-label {
-  font-size: 0.65rem;
-  color: var(--text-faint);
-}
-
 /* Scrollbar styling */
 .sidebar-content::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .sidebar-content::-webkit-scrollbar-track {
@@ -248,8 +622,13 @@
 }
 
 .sidebar-content::-webkit-scrollbar-thumb {
-  background: var(--overlay-strong);
-  border-radius: 2px;
+  background: var(--accent);
+  border-radius: 3px;
+}
+
+.sidebar-content {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
 }
 
 /* ========== RESPONSIVE ========== */
@@ -257,8 +636,9 @@
 /* Tablet */
 @media (max-width: 968px) {
   .price-sidebar {
-    width: 350px;
+    width: 65%;
   }
+
 }
 
 /* Mobile */
@@ -287,20 +667,28 @@
 }
 
 @media (max-width: 480px) {
-  .sidebar-toggle-btn {
-    width: 42px;
-    height: 42px;
-    bottom: 4.5rem;
-    right: 1.5rem;
-  }
-
   .plan-card {
     padding: 0.75rem 0.85rem;
-    gap: 0.6rem;
+    gap: 0.4rem;
+  }
+
+  .plan-card-bottom {
+    padding-left: calc(28px + 0.6rem);
+    flex-wrap: wrap;
+    gap: 0.4rem;
   }
 
   .cost-value {
     font-size: 0.95rem;
+  }
+
+  .plan-details {
+    font-size: 0.65rem;
+  }
+
+  .plan-select-btn {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.7rem;
   }
 }
 
