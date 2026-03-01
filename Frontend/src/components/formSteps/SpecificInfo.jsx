@@ -12,9 +12,15 @@ export default function SpecificInfo({ formData, setFormData, setThrowError }) {
                 <input type="text" id="name" name="name" placeholder="π.χ. Γιάννης Παπαδόπουλος" required value={formData.name} onChange={handleInputChange} />
             </div>
 
-            <div className="form-group">
-                <label htmlFor="phone">Τηλέφωνο</label>
-                <input type="tel" id="phone" name="phone" placeholder="69xxxxxxxx" required value={formData.phone} onChange={handleInputChange} />
+            <div className="form-group-row">
+                <div className="form-group">
+                    <label htmlFor="phone">Τηλέφωνο</label>
+                    <input type="tel" id="phone" name="phone" placeholder="69xxxxxxxx" required value={formData.phone} onChange={handleInputChange} />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="π.χ. email@example.com" required value={formData.email || ''} onChange={handleInputChange} />
+                </div>
             </div>
 
             <div className="form-group">

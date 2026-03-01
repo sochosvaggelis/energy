@@ -11,6 +11,7 @@ import CTA from './components/CTA'
 import Footer from './components/Footer'
 import ThemeToggle from './components/ThemeToggle'
 import PriceSidebar from './components/PriceSidebar'
+import PlanDetailSidebar from './components/PlanDetailSidebar'
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -35,6 +36,8 @@ function App() {
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pricesData, setPricesData] = useState([])
+  const [selectedPlan, setSelectedPlan] = useState(null)
+  const [detailSidebarOpen, setDetailSidebarOpen] = useState(false)
 
   useEffect(() => {
     async function loadPrices() {
@@ -70,19 +73,24 @@ function App() {
   const scrollToForm = () => {
     document.querySelector('.form-card')?.scrollIntoView({
       behavior: 'smooth',
-      block: 'center'
+      block: 'start'
     })
   }
 
   useEffect(() => {
-    if (sidebarOpen) {
-      scrollToForm()
+    if (sidebarOpen || detailSidebarOpen) {
+      if (sidebarOpen) scrollToForm()
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
     }
     return () => { document.body.style.overflow = '' }
-  }, [sidebarOpen])
+  }, [sidebarOpen, detailSidebarOpen])
+
+  const handlePlanSelect = (plan) => {
+    setSelectedPlan(plan)
+    setDetailSidebarOpen(true)
+  }
 
   const handleCtaClick = () => {
     scrollToForm()
@@ -109,6 +117,12 @@ function App() {
         onToggle={() => setSidebarOpen(prev => !prev)}
         formSubmitted={formSubmitted}
         onGoToForm={scrollToForm}
+        onPlanSelect={handlePlanSelect}
+      />
+      <PlanDetailSidebar
+        isOpen={detailSidebarOpen}
+        onClose={() => setDetailSidebarOpen(false)}
+        selectedPlan={selectedPlan}
       />
       <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode(prev => !prev)} />
     </>

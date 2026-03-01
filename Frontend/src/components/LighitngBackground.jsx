@@ -162,6 +162,7 @@ const Lightning = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 
         const uRotationLocation = gl.getUniformLocation(program, 'uRotation');
 
         const startTime = performance.now();
+        let animId;
         const render = () => {
             resizeCanvas();
             gl.viewport(0, 0, canvas.width, canvas.height);
@@ -181,11 +182,12 @@ const Lightning = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 
             gl.uniform1f(uIntensityLocation, intensity);
             gl.uniform1f(uSizeLocation, size);
             gl.drawArrays(gl.TRIANGLES, 0, 6);
-            requestAnimationFrame(render);
+            animId = requestAnimationFrame(render);
         };
-        requestAnimationFrame(render);
+        animId = requestAnimationFrame(render);
 
         return () => {
+            cancelAnimationFrame(animId);
             window.removeEventListener('resize', resizeCanvas);
         };
     }, [hue, xOffset, speed, intensity, size]);

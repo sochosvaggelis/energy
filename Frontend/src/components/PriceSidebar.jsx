@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useCallback } from 'react'
 import './styles/PriceSidebar.css'
 
 // Non-linear slider: 0-500 kWh takes the first half, 500-5000 scales quadratically
@@ -34,12 +34,29 @@ const TARIFF_COLOR_MAP = Object.fromEntries(
   TARIFF_FILTERS.map(f => [f.key, { label: f.label, color: f.color }])
 )
 
-export default function PriceSidebar({ formData, setFormData, pricesData, isOpen, onToggle, formSubmitted, onGoToForm }) {
-  const kWh = formData.kwhConsumption
+export default function PriceSidebar({ formData, setFormData, pricesData, isOpen, onToggle, formSubmitted, onGoToForm, onPlanSelect }) {
+  const [localKwh, setLocalKwh] = useState(null)
+  const isDragging = useRef(false)
+
+  const kWh = localKwh !== null ? localKwh : formData.kwhConsumption
   const nightKwh = formData.nightKwhConsumption
   const [activeFilters, setActiveFilters] = useState(new Set())
   const [expandedCard, setExpandedCard] = useState(null)
   const [activeTab, setActiveTab] = useState('charges')
+
+  const handleSliderChange = useCallback((e) => {
+    const val = sliderToKwh(Number(e.target.value))
+    isDragging.current = true
+    setLocalKwh(val)
+  }, [])
+
+  const handleSliderEnd = useCallback(() => {
+    if (isDragging.current && localKwh !== null) {
+      setFormData(prev => ({ ...prev, kwhConsumption: localKwh }))
+      setLocalKwh(null)
+      isDragging.current = false
+    }
+  }, [localKwh, setFormData])
 
 
   const toggleFilter = (key) => {
@@ -128,10 +145,9 @@ export default function PriceSidebar({ formData, setFormData, pricesData, isOpen
                 max={SLIDER_MAX}
                 step="1"
                 value={kwhToSlider(kWh)}
-                onChange={(e) => {
-                  const val = sliderToKwh(Number(e.target.value))
-                  setFormData(prev => ({ ...prev, kwhConsumption: val }))
-                }}
+                onChange={handleSliderChange}
+                onMouseUp={handleSliderEnd}
+                onTouchEnd={handleSliderEnd}
                 className="kwh-slider"
               />
               <div className="slider-labels">
@@ -215,7 +231,7 @@ export default function PriceSidebar({ formData, setFormData, pricesData, isOpen
                             <span className="plan-detail-sep">·</span>
                             <span>Πάγιο: {(plan.monthly_fee_eur ?? 0).toFixed(2)}€</span>
                           </div>
-                          <button className="plan-select-btn" type="button">Με ενδιαφέρει</button>
+                          <button className="plan-select-btn" type="button" onClick={() => onPlanSelect?.(plan)}>Με ενδιαφέρει</button>
                         </div>
                       </div>
                       <div className="plan-chevron-col" onClick={() => { setExpandedCard(isExpanded ? null : cardKey); setActiveTab('charges') }}>

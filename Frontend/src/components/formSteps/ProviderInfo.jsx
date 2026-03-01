@@ -32,6 +32,13 @@ export default function ProviderInfo({ formData, setFormData, throwError, setThr
                     onClick={() => handleSelect(provider.id)}
                 />
             ))}
+            <button
+                type="button"
+                className={`provider-unknown-btn ${formData.provider === 'unknown' ? 'selected' : ''}`}
+                onClick={() => handleSelect('unknown')}
+            >
+                Δεν γνωρίζω
+            </button>
         </div>
     )
 }   

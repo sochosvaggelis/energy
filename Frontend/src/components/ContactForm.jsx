@@ -30,7 +30,7 @@ export default function ContactForm({ formData, setFormData, onFormSubmit }) {
             ...formData
         }
         console.log('Form submitted:', data)
-        alert('Ευχαριστούμε! Θα σε καλέσουμε σύντομα.')
+        // alert('Ευχαριστούμε! Θα σε καλέσουμε σύντομα.')
         onFormSubmit?.()
     }
 
@@ -82,12 +82,14 @@ export default function ContactForm({ formData, setFormData, onFormSubmit }) {
 
     return (
         <div className="form-card">
-            <Lightning hue={260} xOffset={0} speed={.5} intensity={0.6} size={2} />
+            {activeService === 'electricity' && (
+                <Lightning hue={260} xOffset={0} speed={0.5} intensity={0.6} size={2} />
+            )}
             <div className="form-content">
-            <div className="form-header">
-                <h2>Λάβε Δωρεάν Προσφορά</h2>
-                <p>Συμπλήρωσε τα στοιχεία σου και θα σε καλέσουμε</p>
-            </div>
+                <div className="form-header">
+                    <h2>Λάβε Δωρεάν Προσφορά</h2>
+                    <p>Συμπλήρωσε τα στοιχεία σου και θα σε καλέσουμε</p>
+                </div>
 
             <form id="leadForm" onSubmit={handleSubmit}>
                 <div className={`service-toggle ${toggleOpen ? 'open' : ''}`}>
@@ -117,13 +119,23 @@ export default function ContactForm({ formData, setFormData, onFormSubmit }) {
                     </button>
                 </div>
 
+                <div className="step-indicator">
+                    <div className="step-text">Βήμα {step}/3</div>
+                    <div className="step-bar">
+                        <div className="step-bar-fill" style={{ width: `${(step / 3) * 100}%` }} />
+                    </div>
+                </div>
+
                 <div className="form-step-content">
                     {(activeService === 'electricity' || activeService === 'both') && step === 1 && (
                         <BasicInfo formData={formData} setFormData={setFormData} throwError={throwError} setThrowError={setThrowError} />
                     )}
 
                     {(activeService === 'electricity' || activeService === 'both') && step === 2 && (
-                        <ProviderInfo formData={formData} setFormData={setFormData} throwError={throwError} setThrowError={setThrowError} />
+                        <>
+                            <div className="step-title">Τωρινός πάροχος</div>
+                            <ProviderInfo formData={formData} setFormData={setFormData} throwError={throwError} setThrowError={setThrowError} />
+                        </>
                     )}
 
                     {(activeService === 'electricity' || activeService === 'both') && step === 3 && (
