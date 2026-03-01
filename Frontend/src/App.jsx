@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './lib/supabase'
 import Nav from './components/Nav'
@@ -77,6 +77,39 @@ function App() {
     })
   }
 
+  const detailWasOpen = useRef(false)
+  const closingRef = useRef(false)
+
+  const handleSidebarClose = () => {
+    if (detailSidebarOpen && !closingRef.current) {
+      closingRef.current = true
+      detailWasOpen.current = true
+      setDetailSidebarOpen(false)
+      setTimeout(() => {
+        setSidebarOpen(false)
+        closingRef.current = false
+      }, 400)
+    } else if (!closingRef.current) {
+      setSidebarOpen(false)
+    }
+  }
+
+  const handleSidebarToggle = () => {
+    if (sidebarOpen) {
+      handleSidebarClose()
+    } else {
+      setSidebarOpen(true)
+    }
+  }
+
+  useEffect(() => {
+    if (sidebarOpen && detailWasOpen.current) {
+      setTimeout(() => {
+        setDetailSidebarOpen(true)
+      }, 400)
+    }
+  }, [sidebarOpen])
+
   useEffect(() => {
     if (sidebarOpen || detailSidebarOpen) {
       if (sidebarOpen) scrollToForm()
@@ -101,7 +134,7 @@ function App() {
       <div className="bg-pattern"></div>
       <div className="grid-overlay"></div>
 
-      <Nav onCtaClick={handleCtaClick} sidebarOpen={sidebarOpen} onSidebarToggle={() => setSidebarOpen(prev => !prev)} />
+      <Nav onCtaClick={handleCtaClick} sidebarOpen={sidebarOpen} onSidebarToggle={handleSidebarToggle} />
       <Hero formData={formData} setFormData={setFormData} onFormSubmit={() => { setFormSubmitted(true); setSidebarOpen(true) }} />
       <Features />
       <HowItWorks />
@@ -114,7 +147,7 @@ function App() {
         setFormData={setFormData}
         pricesData={pricesData}
         isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(prev => !prev)}
+        onToggle={handleSidebarToggle}
         formSubmitted={formSubmitted}
         onGoToForm={scrollToForm}
         onPlanSelect={handlePlanSelect}

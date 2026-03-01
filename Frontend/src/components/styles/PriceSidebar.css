@@ -26,11 +26,11 @@
   transform: translateX(0);
 }
 
-/* Close button – positioned outside the sidebar's right edge */
+/* Close button – inside the sidebar */
 .sidebar-close-btn {
   position: absolute;
-  top: 2rem;
-  right: -20px;
+  top: 1rem;
+  right: 1rem;
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -132,10 +132,19 @@
 /* Tariff filter buttons */
 .tariff-filters {
   display: flex;
+  align-items: center;
   gap: 0.35rem;
   margin-top: 0.6rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+}
+
+.tariff-filters-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-right: 0.15rem;
 }
 
 .tariff-filter-btn {
@@ -655,6 +664,11 @@
 
   .price-sidebar {
     width: 100%;
+  }
+
+  .sidebar-close-btn {
+    right: 1rem;
+    top: 1rem;
   }
 
   .sidebar-header {

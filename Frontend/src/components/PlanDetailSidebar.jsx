@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import './styles/PlanDetailSidebar.css'
 
 import idFront from '../assets/idFront.svg'
 import idBack from '../assets/idBack.svg'
 import powerMeter from '../assets/powerMeter.svg'
+import billFront from '../assets/billFront.svg'
+import billBack from '../assets/billBack.svg'
 import deiLogo from '../assets/deiLogo.svg'
 import enerwaveLogo from '../assets/enerwaveLogo.svg'
 import eyniceLogo from '../assets/eyniceLogo.svg'
@@ -29,6 +31,14 @@ function getProviderLogo(name) {
   return null
 }
 
+const UploadIcon = () => (
+  <svg className="upload-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
+  </svg>
+)
+
 const SECTIONS = [
   { title: 'Στοιχεία Προγράμματος', step: 0 },
   { title: 'Καταχώρηση Στοιχείων', step: 1 },
@@ -38,6 +48,14 @@ const SECTIONS = [
 
 export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan }) {
   const [activeStep, setActiveStep] = useState(0)
+  const sectionRefs = useRef([])
+
+  useEffect(() => {
+    const el = sectionRefs.current[activeStep]
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [activeStep])
   const [detailForm, setDetailForm] = useState({
     afm: '',
     doy: '',
@@ -85,7 +103,6 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan }) {
   }
 
   const handleClose = () => {
-    setActiveStep(0)
     onClose()
   }
 
@@ -103,11 +120,11 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan }) {
           </button>
         )}
 
-        <div className="detail-sidebar-inner">
         <div className="detail-sidebar-header">
           <h3>Επισύναψη Εγγράφων</h3>
         </div>
 
+        <div className="detail-sidebar-inner">
         <div className="detail-sidebar-content">
           {SECTIONS.map(({ title, step }) => {
             const isActive = step === activeStep
@@ -117,6 +134,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan }) {
             return (
               <div
                 key={step}
+                ref={el => sectionRefs.current[step] = el}
                 className={`detail-section ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`}
               >
                 <div className="detail-section-header">
@@ -235,14 +253,14 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan }) {
                             <input type="file" accept="image/*,.pdf" onChange={handleFileChange('tautotitaMprosta')} />
                             <img src={idFront} alt="Μπροστά όψη" className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label">
-                              {files.tautotitaMprosta ? files.tautotitaMprosta.name : 'Μπροστά όψη'}
+                              <UploadIcon />{files.tautotitaMprosta ? files.tautotitaMprosta.name : 'Μπροστά όψη'}
                             </span>
                           </label>
                           <label className={`detail-upload-card ${files.tautotitaPiso ? 'has-file' : ''}`}>
                             <input type="file" accept="image/*,.pdf" onChange={handleFileChange('tautotitaPiso')} />
                             <img src={idBack} alt="Πίσω όψη" className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label">
-                              {files.tautotitaPiso ? files.tautotitaPiso.name : 'Πίσω όψη'}
+                              <UploadIcon />{files.tautotitaPiso ? files.tautotitaPiso.name : 'Πίσω όψη'}
                             </span>
                           </label>
                         </div>
@@ -254,7 +272,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan }) {
                           <input type="file" accept="image/*" onChange={handleFileChange('metritis')} />
                           <img src={powerMeter} alt="Μετρητής" className="detail-upload-card-icon" />
                           <span className="detail-upload-card-label">
-                            {files.metritis ? files.metritis.name : 'Φωτογραφία μετρητή & ενδείξεων'}
+                            <UploadIcon />{files.metritis ? files.metritis.name : 'Φωτογραφία μετρητή & ενδείξεων'}
                           </span>
                         </label>
                       </div>
@@ -262,20 +280,20 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan }) {
                       <div className="detail-form-subsection">
                         <h5 className="detail-form-subtitle">Τελευταίος Λογαριασμός</h5>
                         <div className="detail-upload-row">
-                          <div className="detail-upload-field">
-                            <label>Μπροστά όψη <span className="detail-required">*</span></label>
-                            <label className={`detail-upload-btn ${files.logariasmosMprosta ? 'has-file' : ''}`}>
-                              <input type="file" accept="image/*,.pdf" onChange={handleFileChange('logariasmosMprosta')} />
-                              {files.logariasmosMprosta ? files.logariasmosMprosta.name : 'Επιλογή αρχείου'}
-                            </label>
-                          </div>
-                          <div className="detail-upload-field">
-                            <label>Πίσω όψη <span className="detail-required">*</span></label>
-                            <label className={`detail-upload-btn ${files.logariasmosPiso ? 'has-file' : ''}`}>
-                              <input type="file" accept="image/*,.pdf" onChange={handleFileChange('logariasmosPiso')} />
-                              {files.logariasmosPiso ? files.logariasmosPiso.name : 'Επιλογή αρχείου'}
-                            </label>
-                          </div>
+                          <label className={`detail-upload-card ${files.logariasmosMprosta ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf" onChange={handleFileChange('logariasmosMprosta')} />
+                            <img src={billFront} alt="Μπροστά όψη" className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label">
+                              <UploadIcon />{files.logariasmosMprosta ? files.logariasmosMprosta.name : 'Μπροστά όψη'}
+                            </span>
+                          </label>
+                          <label className={`detail-upload-card ${files.logariasmosPiso ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf" onChange={handleFileChange('logariasmosPiso')} />
+                            <img src={billBack} alt="Πίσω όψη" className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label">
+                              <UploadIcon />{files.logariasmosPiso ? files.logariasmosPiso.name : 'Πίσω όψη'}
+                            </span>
+                          </label>
                         </div>
                       </div>
 
@@ -289,7 +307,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan }) {
                           </label>
                           <label className={`detail-upload-btn ${files.misthotirio ? 'has-file' : ''}`}>
                             <input type="file" accept="image/*,.pdf" onChange={handleFileChange('misthotirio')} />
-                            {files.misthotirio ? files.misthotirio.name : 'Επιλογή αρχείου'}
+                            <UploadIcon />{files.misthotirio ? files.misthotirio.name : 'Επιλογή αρχείου'}
                           </label>
                         </div>
                       </div>

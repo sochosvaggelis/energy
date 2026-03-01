@@ -156,6 +156,7 @@ export default function PriceSidebar({ formData, setFormData, pricesData, isOpen
                 <span>5000 kWh</span>
               </div>
               <div className="tariff-filters">
+                <span className="tariff-filters-label">Φίλτρα:</span>
                 {TARIFF_FILTERS.map(f => (
                   <button
                     key={f.key}
