@@ -68,6 +68,11 @@ function App() {
   useEffect(() => {
     document.body.classList.toggle('light-mode', !darkMode)
     localStorage.setItem('darkMode', JSON.stringify(darkMode))
+
+    const colorSchemeMeta = document.querySelector('meta[name="color-scheme"]')
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]')
+    if (colorSchemeMeta) colorSchemeMeta.content = darkMode ? 'dark' : 'light'
+    if (themeColorMeta) themeColorMeta.content = darkMode ? '#0a1628' : '#f1f5f9'
   }, [darkMode])
 
   const scrollToForm = () => {

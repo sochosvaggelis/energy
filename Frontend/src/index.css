@@ -1,5 +1,5 @@
 :root {
-  color-scheme: dark light;
+  color-scheme: dark;
   --midnight: #0a1628;
   --deep-blue: #1a2744;
   --ocean: #2d4a7c;
@@ -46,6 +46,7 @@
 }
 
 body.light-mode {
+  color-scheme: light;
   --bg-body: #f1f5f9;
   --bg-surface-start: rgba(255, 255, 255, 0.92);
   --bg-surface-end: rgba(241, 245, 249, 0.92);
