@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { supabase } from './lib/supabase'
+import { upsertSubmission } from './lib/submissions'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import Features from './components/Features'
@@ -144,35 +145,11 @@ function App() {
     setFormSubmitted(true)
     setSidebarOpen(true)
 
-    const payload = {
-      lead_info: {
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email || null,
-        region: formData.region,
-        contact_time: formData.contact_time,
-      },
-      electricity_info: {
-        customer_type: formData.customerType,
-        night_tariff: formData.nightTariff,
-        social_tariff: formData.socialTariff,
-        current_provider: formData.provider,
-        kwh_consumption: formData.kwhConsumption,
-        night_kwh_consumption: formData.nightKwhConsumption,
-      },
-      submitted_at: new Date().toISOString(),
-    }
-
-    const { data, error } = await supabase
-      .from('submissions')
-      .insert([payload])
-      .select('id')
-      .single()
-
-    if (!error && data) {
-      setSubmissionId(data.id)
-    } else {
-      console.error('Failed to create submission:', error)
+    const { id, error } = await upsertSubmission(formData)
+    if (!error && id) {
+      setSubmissionId(id)
+    } else if (error) {
+      console.error('Failed to upsert submission:', error)
     }
   }
 

@@ -61,6 +61,9 @@ export function resolvePlanPrice(plan, variables) {
 
 export function resolvePlanNightPrice(plan, variables) {
   if (plan.night_price_formula) {
+    if (plan.night_price_formula.base_type === 'auto') {
+      return computeAutoPrice(plan, variables)
+    }
     return evaluateFormula(plan.night_price_formula, variables)
   }
   return plan.night_price_per_kwh
