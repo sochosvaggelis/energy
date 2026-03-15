@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import './App.css'
 import { supabase } from './lib/supabase'
 import { upsertSubmission } from './lib/submissions'
 import Nav from './components/Nav'

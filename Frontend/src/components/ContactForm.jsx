@@ -31,7 +31,6 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
             ...formData
         }
         console.log('Form submitted:', data)
-        // alert('Ευχαριστούμε! Θα σε καλέσουμε σύντομα.')
         onFormSubmit?.()
     }
 
