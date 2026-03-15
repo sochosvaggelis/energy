@@ -10,6 +10,5 @@
 }
 
 body.light-mode .lightning-container {
-  opacity: 0.35;
-  mix-blend-mode: multiply;
+  opacity: 0.15;
 }

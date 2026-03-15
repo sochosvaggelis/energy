@@ -116,6 +116,17 @@
   flex-shrink: 0;
 }
 
+/* Light mode */
+body.light-mode .hero {
+  background: linear-gradient(180deg, rgba(45, 74, 124, 0.06) 0%, transparent 100%);
+}
+
+body.light-mode .badge {
+  background: rgba(45, 74, 124, 0.1);
+  border-color: rgba(45, 74, 124, 0.3);
+  color: var(--accent);
+}
+
 /* ========== RESPONSIVE ========== */
 
 /* Large tablets and small desktops */

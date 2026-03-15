@@ -70,3 +70,8 @@
   font-size: 1rem;
   line-height: 1.7;
 }
+
+/* Light mode: subtle background */
+body.light-mode .faq {
+  background: linear-gradient(180deg, transparent 0%, rgba(45, 74, 124, 0.04) 50%, transparent 100%);
+}

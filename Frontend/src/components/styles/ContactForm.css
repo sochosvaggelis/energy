@@ -118,7 +118,7 @@
 
 .toggle-btn.active {
   background: var(--accent);
-  color: var(--midnight);
+  color: var(--accent-text);
 }
 
 .toggle-btn:hover:not(.active) {
@@ -258,7 +258,7 @@
 }
 
 .option-btn.active {
-  color: var(--midnight);
+  color: var(--accent-text);
   font-weight: 600;
   border-color: transparent;
   box-shadow: 0 4px 15px var(--accent-glow);
@@ -269,7 +269,7 @@
 }
 
 .option-btn.active .option-indicator {
-  border-color: var(--midnight);
+  border-color: var(--accent-text);
   background: var(--white);
 }
 
@@ -356,7 +356,7 @@
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
   border: none;
   border-radius: 12px;
-  color: var(--midnight);
+  color: var(--accent-text);
   font-family: inherit;
   font-size: 1rem;
   font-weight: 700;
@@ -384,7 +384,7 @@
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
   border: none;
   border-radius: 12px;
-  color: var(--midnight);
+  color: var(--accent-text);
   font-family: inherit;
   font-size: 1rem;
   font-weight: 700;
@@ -472,6 +472,36 @@
   margin-top: 0.35rem;
   font-size: 0.7rem;
   color: var(--text-faint);
+}
+
+/* Light mode: card with blue-tinted shadow */
+body.light-mode .form-card {
+  box-shadow:
+    0 25px 50px -12px rgba(45, 74, 124, 0.15),
+    0 0 0 1px rgba(45, 74, 124, 0.06) inset;
+}
+
+body.light-mode .option-btn {
+  background: rgba(45, 74, 124, 0.07);
+  border-color: rgba(45, 74, 124, 0.15);
+}
+
+body.light-mode .option-btn:hover:not(.active) {
+  background: rgba(45, 74, 124, 0.12);
+  border-color: rgba(45, 74, 124, 0.25);
+}
+
+body.light-mode .toggle-btn {
+  background: rgba(45, 74, 124, 0.08);
+}
+
+body.light-mode .toggle-btn.active {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+body.light-mode .toggle-btn:hover:not(.active) {
+  background: rgba(45, 74, 124, 0.15);
 }
 
 /* ========== RESPONSIVE ========== */
@@ -575,7 +605,7 @@
     padding: 0.85rem 1rem;
     opacity: 1;
     background: var(--accent);
-    color: var(--midnight);
+    color: var(--accent-text);
     border-radius: 12px;
     order: -1;
   }

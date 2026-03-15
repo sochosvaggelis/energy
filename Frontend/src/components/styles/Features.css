@@ -66,6 +66,15 @@
   font-size: 0.95rem;
 }
 
+/* Light mode: tinted section background */
+body.light-mode .features {
+  background: linear-gradient(180deg, transparent 0%, rgba(45, 74, 124, 0.05) 50%, transparent 100%);
+}
+
+body.light-mode .feature-card {
+  box-shadow: 0 4px 20px rgba(45, 74, 124, 0.08);
+}
+
 /* Responsive */
 @media (max-width: 968px) {
   .features-grid {

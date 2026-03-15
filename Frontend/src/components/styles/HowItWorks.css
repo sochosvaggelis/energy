@@ -78,6 +78,16 @@
   margin: 0 auto;
 }
 
+/* Light mode: stronger tinted background */
+body.light-mode .how-it-works {
+  background: linear-gradient(180deg, transparent 0%, rgba(45, 74, 124, 0.08) 50%, transparent 100%);
+}
+
+body.light-mode .step-number {
+  background: #e8edf4;
+  box-shadow: 0 4px 15px rgba(45, 74, 124, 0.12);
+}
+
 /* Responsive */
 @media (max-width: 968px) {
   .steps {

@@ -11,6 +11,7 @@
   --gray-200: #e2e8f0;
   --gray-400: #94a3b8;
   --gray-600: #475569;
+  --accent-text: var(--midnight);
   --success: #10b981;
 
   /* Semantic tokens – dark mode defaults */
@@ -47,11 +48,15 @@
 
 body.light-mode {
   color-scheme: light;
-  --bg-body: #f1f5f9;
-  --bg-surface-start: rgba(255, 255, 255, 0.92);
-  --bg-surface-end: rgba(241, 245, 249, 0.92);
-  --bg-input: rgba(0, 0, 0, 0.05);
-  --bg-nav: rgba(255, 255, 255, 0.85);
+  --accent: #2d4a7c;
+  --accent-light: #1a2744;
+  --accent-glow: rgba(45, 74, 124, 0.3);
+  --accent-text: #ffffff;
+  --bg-body: #e8edf4;
+  --bg-surface-start: rgba(232, 237, 244, 0.95);
+  --bg-surface-end: rgba(220, 228, 240, 0.95);
+  --bg-input: rgba(45, 74, 124, 0.06);
+  --bg-nav: rgba(232, 237, 244, 0.9);
   --border-subtle: rgba(0, 0, 0, 0.06);
   --border-default: rgba(0, 0, 0, 0.12);
   --border-medium: rgba(0, 0, 0, 0.18);
@@ -59,19 +64,19 @@ body.light-mode {
   --text-secondary: #1a2236;
   --text-muted: #374151;
   --text-faint: #6b7280;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --shadow-light: rgba(0, 0, 0, 0.08);
+  --shadow-color: rgba(45, 74, 124, 0.12);
+  --shadow-light: rgba(45, 74, 124, 0.08);
   --overlay-faint: rgba(0, 0, 0, 0.02);
   --overlay-light: rgba(0, 0, 0, 0.04);
   --overlay-medium: rgba(0, 0, 0, 0.06);
   --overlay-strong: rgba(0, 0, 0, 0.08);
-  --bg-step-number: #f1f5f9;
+  --bg-step-number: #e8edf4;
   --bg-pattern-a: rgba(45, 74, 124, 0.06);
   --bg-pattern-b: rgba(245, 158, 11, 0.05);
   --grid-line-color: #94a3b8;
-  --toggle-mobile-bg: rgba(241, 245, 249, 0.98);
-  --toggle-mobile-open-bg: rgba(241, 245, 249, 1);
-  --section-gradient: rgba(0, 0, 0, 0.03);
+  --toggle-mobile-bg: rgba(232, 237, 244, 0.98);
+  --toggle-mobile-open-bg: rgba(232, 237, 244, 1);
+  --section-gradient: rgba(45, 74, 124, 0.06);
   --hover-surface: rgba(0, 0, 0, 0.04);
   --grid-opacity: 0.18;
   --grid-opacity-mobile: 0.22;

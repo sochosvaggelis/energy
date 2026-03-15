@@ -37,7 +37,7 @@
   border-radius: 50%;
   border: 1.5px solid var(--accent);
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-  color: var(--midnight);
+  color: var(--accent-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -661,6 +661,88 @@
 .sidebar-content {
   scrollbar-width: thin;
   scrollbar-color: var(--accent) transparent;
+}
+
+/* Light mode sidebar styling */
+body.light-mode .price-sidebar {
+  background: linear-gradient(180deg, #dce4f0 0%, #d0daeb 100%);
+  border-right: 1px solid rgba(45, 74, 124, 0.15);
+  box-shadow: 8px 0 30px rgba(45, 74, 124, 0.12);
+}
+
+body.light-mode .sidebar-header {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  border-bottom: none;
+}
+
+body.light-mode .sidebar-header h3 {
+  color: #ffffff;
+}
+
+body.light-mode .sidebar-slider-label,
+body.light-mode .sidebar-kwh-unit,
+body.light-mode .tariff-filters-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+body.light-mode .sidebar-controls-row {
+  color: #ffffff;
+}
+
+body.light-mode .sidebar-kwh-input {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+body.light-mode .sidebar-kwh-input:focus {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+}
+
+
+body.light-mode .kwh-slider-wrapper .slider-labels span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.light-mode .sidebar-close-btn {
+  background: #ffffff;
+  border-color: rgba(45, 74, 124, 0.2);
+  color: var(--accent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .sidebar-close-btn:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+body.light-mode .sidebar-goto-form-btn {
+  color: #ffffff;
+}
+
+body.light-mode .plan-card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(45, 74, 124, 0.1);
+  border-left: 3px solid rgba(45, 74, 124, 0.2);
+  box-shadow: 0 2px 8px rgba(45, 74, 124, 0.06);
+}
+
+body.light-mode .plan-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(45, 74, 124, 0.2);
+  border-left-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(45, 74, 124, 0.1);
+}
+
+body.light-mode .plan-card.top-plan {
+  border-left: 3px solid var(--accent);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 16px rgba(45, 74, 124, 0.1);
+}
+
+body.light-mode .plan-select-btn {
+  color: #ffffff;
 }
 
 /* ========== RESPONSIVE ========== */

@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import './styles/Lighting.css';
 
-const Lightning = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 }) => {
+const Lightning = ({ hue = 230, lightModeHue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 }) => {
     const canvasRef = useRef(null);
 
     useEffect(() => {
@@ -15,11 +15,13 @@ const Lightning = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        const gl = canvas.getContext('webgl');
+        const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
         if (!gl) {
             console.error('WebGL not supported');
             return;
         }
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
         const vertexShaderSource = `
       attribute vec2 aPosition;
@@ -106,7 +108,9 @@ const Lightning = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 
           vec3 baseColor = hsv2rgb(vec3(uHue / 360.0, 0.7, 0.8));
           vec3 col = baseColor * pow(0.05 / dist, 1.0) * uIntensity;
           col = pow(col, vec3(1.0));
-          fragColor = vec4(col, 1.0);
+          float lum = dot(col, vec3(0.299, 0.587, 0.114));
+          float alpha = smoothstep(0.03, 0.25, lum);
+          fragColor = vec4(col, alpha);
       }
 
       void main() {
@@ -165,11 +169,14 @@ const Lightning = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 
         let animId;
         const render = () => {
             resizeCanvas();
+            gl.clearColor(0, 0, 0, 0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
             gl.viewport(0, 0, canvas.width, canvas.height);
             gl.uniform2f(iResolutionLocation, canvas.width, canvas.height);
             const currentTime = performance.now();
             gl.uniform1f(iTimeLocation, (currentTime - startTime) / 1000.0);
-            gl.uniform1f(uHueLocation, hue);
+            const isLightMode = document.body.classList.contains('light-mode');
+            gl.uniform1f(uHueLocation, isLightMode ? lightModeHue : hue);
 
             // Keep lightning centered regardless of aspect ratio
             gl.uniform1f(uXOffsetLocation, xOffset);
@@ -190,7 +197,7 @@ const Lightning = ({ hue = 230, xOffset = 0, speed = 1, intensity = 1, size = 1 
             cancelAnimationFrame(animId);
             window.removeEventListener('resize', resizeCanvas);
         };
-    }, [hue, xOffset, speed, intensity, size]);
+    }, [hue, lightModeHue, xOffset, speed, intensity, size]);
 
     return <canvas ref={canvasRef} className="lightning-container" />;
 };

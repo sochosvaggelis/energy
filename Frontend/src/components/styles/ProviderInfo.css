@@ -99,6 +99,45 @@
   box-shadow: 0 0 0 3px var(--accent-glow), 0 6px 20px rgba(245, 158, 11, 0.25);
 }
 
+/* Light mode: dark blue provider cards */
+body.light-mode .providerInfoContainer img {
+  background: #8b9dc3;
+}
+
+body.light-mode .providerInfoContainer img:hover {
+  background: #7a8eb8;
+}
+
+body.light-mode .providerInfoContainer img.selected {
+  background: #7a8eb8;
+}
+
+body.light-mode .provider-name-btn {
+  background: #8b9dc3;
+  color: #ffffff;
+}
+
+body.light-mode .provider-name-btn:hover {
+  background: #7a8eb8;
+}
+
+body.light-mode .provider-name-btn.selected {
+  background: #7a8eb8;
+}
+
+body.light-mode .provider-unknown-btn {
+  background: #8b9dc3;
+  color: #ffffff;
+}
+
+body.light-mode .provider-unknown-btn:hover {
+  background: #7a8eb8;
+}
+
+body.light-mode .provider-unknown-btn.selected {
+  background: #7a8eb8;
+}
+
 /* ========== RESPONSIVE ========== */
 
 /* Tablets */

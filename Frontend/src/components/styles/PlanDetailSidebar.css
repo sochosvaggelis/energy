@@ -64,7 +64,7 @@
   border-radius: 50%;
   border: 1.5px solid var(--accent);
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-  color: var(--midnight);
+  color: var(--accent-text);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -174,7 +174,7 @@
 .detail-section.completed .detail-section-step {
   border-color: var(--accent);
   background: var(--accent);
-  color: var(--midnight);
+  color: var(--accent-text);
 }
 
 /* Section title */
@@ -463,6 +463,19 @@
   color: var(--accent);
 }
 
+/* Section hint – inline next to title */
+.detail-section-hint {
+  font-size: 0.65rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
 /* ========== FILE UPLOAD (SECTION 3) ========== */
 
 .detail-upload-row {
@@ -664,7 +677,9 @@
   padding: 0.45rem 0.7rem;
   border-radius: 8px;
   border: 1px solid var(--accent);
-  white-space: nowrap;
+  white-space: normal;
+  width: 260px;
+  line-height: 1.5;
   pointer-events: none;
   box-shadow: 0 4px 12px var(--shadow-color);
   z-index: 10;
@@ -915,6 +930,75 @@
 
 .file-preview-remove:hover {
   background: rgba(239, 68, 68, 0.3);
+}
+
+/* Light mode detail sidebar */
+body.light-mode .detail-sidebar {
+  background: linear-gradient(180deg, #dce4f0 0%, #d0daeb 100%);
+}
+
+body.light-mode .detail-sidebar-header {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  border-bottom: none;
+}
+
+body.light-mode .detail-sidebar-header h3 {
+  color: #ffffff;
+}
+
+body.light-mode .detail-section {
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(45, 74, 124, 0.12);
+}
+
+body.light-mode .detail-section.active {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+body.light-mode .detail-section-header {
+  background: rgba(45, 74, 124, 0.05);
+}
+
+body.light-mode .detail-sidebar {
+  --overlay-faint: rgba(45, 74, 124, 0.12);
+  --overlay-medium: rgba(45, 74, 124, 0.22);
+  --bg-input: rgba(45, 74, 124, 0.14);
+  --hover-surface: rgba(45, 74, 124, 0.18);
+}
+
+body.light-mode .detail-plan-logo {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+body.light-mode .detail-yesno-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+body.light-mode .detail-sidebar-close-btn {
+  background: #ffffff;
+  border-color: rgba(45, 74, 124, 0.2);
+  color: var(--accent);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .detail-sidebar-close-btn:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+body.light-mode .detail-upload-card-icon {
+  filter: none;
+  opacity: 0.7;
+}
+
+body.light-mode .detail-upload-card.has-file .detail-upload-card-icon {
+  filter: sepia(1) saturate(5) hue-rotate(190deg);
+  opacity: 0.9;
+}
+
+body.light-mode .detail-next-btn {
+  color: #ffffff;
 }
 
 /* ========== RESPONSIVE ========== */

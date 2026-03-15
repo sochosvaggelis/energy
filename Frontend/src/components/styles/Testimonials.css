@@ -80,6 +80,15 @@
   color: var(--text-muted);
 }
 
+/* Light mode: tinted background + card shadows */
+body.light-mode .testimonials {
+  background: linear-gradient(180deg, transparent 0%, rgba(45, 74, 124, 0.05) 50%, transparent 100%);
+}
+
+body.light-mode .testimonial-card {
+  box-shadow: 0 4px 20px rgba(45, 74, 124, 0.08);
+}
+
 /* Responsive */
 @media (max-width: 968px) {
   .testimonials-grid {

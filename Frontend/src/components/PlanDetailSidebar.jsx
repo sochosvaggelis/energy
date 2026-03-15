@@ -385,6 +385,11 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                     )}
                   </div>
                   <h4 className="detail-section-title">{title}</h4>
+                  {step === 2 && (
+                    <span className="detail-section-hint">
+                      Τα παρακάτω πεδία είναι προαιρετικά. Επισυνάψτε ό,τι έχετε διαθέσιμο — για τα υπόλοιπα θα επικοινωνήσει μαζί σας ο εκπρόσωπός μας.
+                    </span>
+                  )}
                 </div>
 
                 <div className="detail-section-body">
