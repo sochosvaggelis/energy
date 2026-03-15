@@ -28,7 +28,7 @@ function FAQ() {
   ]
 
   return (
-    <section className="faq">
+    <section className="faq" id="faq" aria-label="Συχνές ερωτήσεις">
       <div className="section-header">
         <h2>Συχνές Ερωτήσεις</h2>
       </div>

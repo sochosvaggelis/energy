@@ -3,7 +3,7 @@ import './styles/Hero.css'
 
 function Hero({ formData, setFormData, onFormSubmit, providersData }) {
   return (
-      <section className="hero">
+      <section className="hero" id="hero" aria-label="Σύγκριση τιμών ενέργειας">
         <div className="hero-content">
           <div className="hero-text-top">
             <div className="badge">Δωρεάν Σύγκριση Τιμών</div>

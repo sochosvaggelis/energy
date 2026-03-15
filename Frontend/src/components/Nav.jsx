@@ -2,7 +2,7 @@ import './styles/Nav.css'
 
 function Nav({ onCtaClick, sidebarOpen, onSidebarToggle }) {
   return (
-    <nav>
+    <nav aria-label="Κύρια πλοήγηση">
       <div className="nav-content">
         <a href="#" className="logo">
           <div className="logo-icon">⚡</div>

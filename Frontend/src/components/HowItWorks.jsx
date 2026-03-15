@@ -2,7 +2,7 @@ import './styles/HowItWorks.css'
 
 function HowItWorks() {
   return (
-    <section className="how-it-works">
+    <section className="how-it-works" id="how-it-works" aria-label="Πώς λειτουργεί">
       <div className="section-header">
         <h2>Πώς λειτουργεί;</h2>
         <p>3 απλά βήματα για να μειώσεις τον λογαριασμό σου</p>

@@ -2,7 +2,7 @@ import './styles/Features.css'
 
 function Features() {
   return (
-    <section className="features">
+    <section className="features" id="features" aria-label="Πλεονεκτήματα">
       <div className="section-header">
         <h2>Γιατί να μας επιλέξεις;</h2>
         <p>Σου εξοικονομούμε χρόνο και χρήμα με την εξειδικευμένη μας γνώση της αγοράς ενέργειας</p>

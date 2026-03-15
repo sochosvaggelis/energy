@@ -2,7 +2,7 @@ import './styles/CTA.css'
 
 function CTA({ onCtaClick }) {
   return (
-    <section className="cta-section">
+    <section className="cta-section" id="cta" aria-label="Αίτηση προσφοράς">
       <div className="cta-box">
         <h2>Έτοιμος να εξοικονομήσεις;</h2>
         <p>Συμπλήρωσε τη φόρμα τώρα και ένας σύμβουλός μας θα σε καλέσει σύντομα</p>

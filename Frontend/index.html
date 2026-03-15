@@ -1,22 +1,149 @@
 <!doctype html>
-<html lang="en">
+<html lang="el">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#0a1628">
-    <meta name="nightmode" content="disable">
-    <meta name="force-rendering" content="webkit">
-    <title>EnergyCompare - Βρες την Καλύτερη Τιμή σε Ρεύμα & Φυσικό Αέριο</title>
+
+    <!-- SEO Meta -->
+    <title>EnergyCompare — Σύγκριση Τιμών Ρεύματος & Φυσικού Αερίου | Εξοικονόμηση έως 40%</title>
+    <meta name="description" content="Συγκρίνουμε δωρεάν όλους τους παρόχους ρεύματος και φυσικού αερίου στην Ελλάδα. Βρες την καλύτερη τιμή και εξοικονόμησε έως 40% στον λογαριασμό σου. Χωρίς κρυφές χρεώσεις.">
+    <meta name="keywords" content="σύγκριση τιμών ρεύματος, πάροχοι ενέργειας Ελλάδα, φθηνό ρεύμα, αλλαγή παρόχου, φυσικό αέριο, ΔΕΗ, Protergia, εξοικονόμηση ενέργειας, τιμολόγια ρεύματος, EnergyCompare">
+    <link rel="canonical" href="https://vagggelaras.github.io/swthrhs/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vagggelaras.github.io/swthrhs/">
+    <meta property="og:title" content="EnergyCompare — Σύγκριση Τιμών Ρεύματος & Φυσικού Αερίου">
+    <meta property="og:description" content="Συγκρίνουμε δωρεάν όλους τους παρόχους ρεύματος και φυσικού αερίου στην Ελλάδα. Εξοικονόμησε έως 40%.">
+    <meta property="og:locale" content="el_GR">
+    <meta property="og:site_name" content="EnergyCompare">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="EnergyCompare — Σύγκριση Τιμών Ρεύματος & Φυσικού Αερίου">
+    <meta name="twitter:description" content="Συγκρίνουμε δωρεάν όλους τους παρόχους ρεύματος και φυσικού αερίου στην Ελλάδα. Εξοικονόμησε έως 40%.">
+
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "EnergyCompare",
+      "url": "https://vagggelaras.github.io/swthrhs/",
+      "description": "Δωρεάν σύγκριση τιμών ρεύματος και φυσικού αερίου στην Ελλάδα",
+      "areaServed": {
+        "@type": "Country",
+        "name": "GR"
+      },
+      "serviceType": "Σύγκριση παρόχων ενέργειας"
+    }
+    </script>
+
+    <!-- Structured Data: FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Είναι πραγματικά δωρεάν η υπηρεσία;",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ναι, η υπηρεσία μας είναι 100% δωρεάν για τους καταναλωτές. Πληρωνόμαστε από τους παρόχους ενέργειας ως προμήθεια για κάθε νέο πελάτη που τους φέρνουμε."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Πόσο χρόνο παίρνει η αλλαγή παρόχου;",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Η διαδικασία αλλαγής παρόχου ολοκληρώνεται συνήθως σε 2-4 εβδομάδες. Εμείς αναλαμβάνουμε όλη τη γραφειοκρατία για εσάς."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Θα μείνω χωρίς ρεύμα κατά την αλλαγή;",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Όχι, σε καμία περίπτωση. Η αλλαγή παρόχου γίνεται απρόσκοπτα και δεν επηρεάζει καθόλου την παροχή ρεύματος ή φυσικού αερίου."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Ποιους παρόχους συγκρίνετε;",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Συνεργαζόμαστε με όλους τους μεγάλους παρόχους της ελληνικής αγοράς: ΔΕΗ, Protergia, Elpedison, Zenith, NRG, Volterra, Watt+Volt και πολλούς ακόμα."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <!-- Structured Data: Service -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      "name": "Σύγκριση Τιμών Ενέργειας",
+      "provider": {
+        "@type": "Organization",
+        "name": "EnergyCompare"
+      },
+      "description": "Δωρεάν σύγκριση όλων των παρόχων ρεύματος και φυσικού αερίου στην Ελλάδα. Εξατομικευμένες προτάσεις με εξοικονόμηση έως 40%.",
+      "areaServed": {
+        "@type": "Country",
+        "name": "GR"
+      },
+      "isRelatedTo": ["Ρεύμα", "Φυσικό Αέριο", "Ενέργεια"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR",
+        "description": "Δωρεάν σύγκριση παρόχων"
+      }
+    }
+    </script>
+
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <script src="https://kit.fontawesome.com/c0ed1af7ab.js" crossorigin="anonymous"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/c0ed1af7ab.js" crossorigin="anonymous" defer></script>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Fallback content for crawlers that don't execute JavaScript -->
+    <noscript>
+      <h1>EnergyCompare — Σύγκριση Τιμών Ρεύματος & Φυσικού Αερίου</h1>
+      <p>Συγκρίνουμε δωρεάν όλους τους παρόχους ρεύματος και φυσικού αερίου στην Ελλάδα για να βρούμε την καλύτερη τιμή για σένα. Χωρίς κρυφές χρεώσεις.</p>
+      <h2>Γιατί να μας επιλέξεις;</h2>
+      <ul>
+        <li>Σύγκριση Όλων των Παρόχων — Συνεργαζόμαστε με όλους τους παρόχους ενέργειας στην Ελλάδα.</li>
+        <li>Χωρίς Κρυφές Χρεώσεις — Η υπηρεσία μας είναι 100% δωρεάν.</li>
+        <li>Εξατομικευμένη Πρόταση — Λαμβάνουμε υπόψη τις ανάγκες σου.</li>
+      </ul>
+      <h2>Πώς λειτουργεί;</h2>
+      <ol>
+        <li>Συμπλήρωσε τη Φόρμα</li>
+        <li>Σε Καλούμε Εμείς</li>
+        <li>Εξοικονομείς</li>
+      </ol>
+      <h2>Συχνές Ερωτήσεις</h2>
+      <dl>
+        <dt>Είναι πραγματικά δωρεάν η υπηρεσία;</dt>
+        <dd>Ναι, η υπηρεσία μας είναι 100% δωρεάν για τους καταναλωτές.</dd>
+        <dt>Πόσο χρόνο παίρνει η αλλαγή παρόχου;</dt>
+        <dd>Η διαδικασία ολοκληρώνεται συνήθως σε 2-4 εβδομάδες.</dd>
+        <dt>Θα μείνω χωρίς ρεύμα κατά την αλλαγή;</dt>
+        <dd>Όχι, η αλλαγή παρόχου γίνεται απρόσκοπτα.</dd>
+        <dt>Ποιους παρόχους συγκρίνετε;</dt>
+        <dd>ΔΕΗ, Protergia, Elpedison, Zenith, NRG, Volterra, Watt+Volt και πολλούς ακόμα.</dd>
+      </dl>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

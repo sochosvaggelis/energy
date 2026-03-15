@@ -2,7 +2,7 @@ import './styles/Testimonials.css'
 
 function Testimonials() {
   return (
-    <section className="testimonials">
+    <section className="testimonials" id="testimonials" aria-label="Κριτικές πελατών">
       <div className="section-header">
         <h2>Τι λένε οι πελάτες μας</h2>
         <p>Χιλιάδες Έλληνες εμπιστεύτηκαν την EnergyCompare</p>

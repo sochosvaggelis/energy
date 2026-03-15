@@ -172,12 +172,14 @@ function App() {
       <div className="grid-overlay"></div>
 
       <Nav onCtaClick={handleCtaClick} sidebarOpen={sidebarOpen} onSidebarToggle={handleSidebarToggle} />
-      <Hero formData={formData} setFormData={setFormData} onFormSubmit={handleFormSubmit} providersData={providersData} />
-      <Features />
-      <HowItWorks />
-      <Testimonials />
-      <FAQ />
-      <CTA onCtaClick={scrollToForm} />
+      <main>
+        <Hero formData={formData} setFormData={setFormData} onFormSubmit={handleFormSubmit} providersData={providersData} />
+        <Features />
+        <HowItWorks />
+        <Testimonials />
+        <FAQ />
+        <CTA onCtaClick={scrollToForm} />
+      </main>
       <Footer />
       <PriceSidebar
         formData={formData}

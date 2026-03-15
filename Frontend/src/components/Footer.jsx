@@ -2,7 +2,7 @@ import './styles/Footer.css'
 
 function Footer() {
   return (
-    <footer>
+    <footer aria-label="Υποσέλιδο">
       <div className="footer-content">
         <a href="#" className="logo">
           <div className="logo-icon">⚡</div>
