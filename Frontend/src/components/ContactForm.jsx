@@ -6,6 +6,9 @@ import Lightning from './LighitngBackground'
 import LiquidEther from './LiquidEther';
 import './styles/ContactForm.css'
 
+const GAS_COLORS = ['#00b64c', '#00d8cd', '#90E0EF']
+const GAS_STYLE = { position: 'absolute' }
+
 export default function ContactForm({ formData, setFormData, onFormSubmit, providersData }) {
     const [activeService, setActiveService] = useState('electricity')
     const [toggleOpen, setToggleOpen] = useState(false)
@@ -15,12 +18,23 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
 
     const handleToggle = (service, isActive) => {
         if (isActive) {
-            // Αν πατήσει το ήδη επιλεγμένο, toggle το dropdown
             setToggleOpen(!toggleOpen)
         } else {
-            // Αν επιλέξει άλλο, αλλάζει και κλείνει
             setActiveService(service)
             setToggleOpen(false)
+            setStep(1)
+            setThrowError(null)
+            setFormData(prev => ({
+                ...prev,
+                customerType: 'residential',
+                businessTariff: '',
+                nightTariff: '',
+                socialTariff: '',
+                provider: '',
+                kwhConsumption: 140,
+                nightKwhConsumption: 0,
+                region: '',
+            }))
         }
     }
 
@@ -44,14 +58,16 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
     const handleNext = () => {
         setThrowError(null)
         if (step === 1) {
-            if (!formData.nightTariff) {
-                setThrowError('Παρακαλώ επιλέξτε εάν έχετε νυχτερινό τιμολόγιο ή όχι.')
-                return
-            }
+            if (formData.customerType !== 'professional') {
+                if (!formData.nightTariff) {
+                    setThrowError('Παρακαλώ επιλέξτε εάν έχετε νυχτερινό τιμολόγιο ή όχι.')
+                    return
+                }
 
-            if (!formData.socialTariff) {
-                setThrowError('Παρακαλώ επιλέξτε εάν λαμβάνετε κοινωνικό τιμολόγιο ή όχι.')
-                return
+                if (!formData.socialTariff) {
+                    setThrowError('Παρακαλώ επιλέξτε εάν λαμβάνετε κοινωνικό τιμολόγιο ή όχι.')
+                    return
+                }
             }
 
             setBasicInfo({
@@ -80,8 +96,8 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
             {activeService === 'gas' && (
                 <LiquidEther
                     className="ether-background"
-                    style={{ position: 'absolute'}}
-                    colors={['#00b64c', '#00d8cd', '#90E0EF']}
+                    style={GAS_STYLE}
+                    colors={GAS_COLORS}
                     mouseForce={10}
                     cursorSize={80}
                     isViscous
@@ -91,8 +107,8 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
                     resolution={0.5}
                     isBounce={true}
                     autoDemo
-                    autoSpeed={0.7}
-                    autoIntensity={2.2}
+                    autoSpeed={0.9}
+                    autoIntensity={3}
                     takeoverDuration={0.25}
                     autoResumeDelay={0}
                     autoRampDuration={0.6}

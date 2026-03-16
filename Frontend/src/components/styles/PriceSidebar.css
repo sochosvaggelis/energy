@@ -432,6 +432,18 @@
   text-shadow: 0 0 8px rgba(249, 115, 22, 0.5);
 }
 
+.tariff-badge-provider-change {
+  color: #a855f7;
+  border-color: #a855f7;
+  text-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+.light-mode .tariff-badge-provider-change {
+  color: #7c3aed;
+  border-color: #7c3aed;
+  text-shadow: none;
+}
+
 /* Cost */
 .plan-cost {
   text-align: right;

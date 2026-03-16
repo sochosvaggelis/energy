@@ -191,6 +191,7 @@ function App() {
         formSubmitted={formSubmitted}
         onGoToForm={scrollToForm}
         onPlanSelect={handlePlanSelect}
+        providersData={providersData}
       />
       <PlanDetailSidebar
         isOpen={detailSidebarOpen}
@@ -198,6 +199,7 @@ function App() {
         selectedPlan={selectedPlan}
         formData={formData}
         submissionId={submissionId}
+        providersData={providersData}
       />
       <ThemeToggle darkMode={darkMode} onToggle={() => setDarkMode(prev => !prev)} />
     </>

@@ -35,7 +35,7 @@ const TARIFF_COLOR_MAP = Object.fromEntries(
   TARIFF_FILTERS.map(f => [f.key, { label: f.label, color: f.color }])
 )
 
-export default function PriceSidebar({ formData, setFormData, pricesData, settingsVars = {}, isOpen, onToggle, formSubmitted, onGoToForm, onPlanSelect }) {
+export default function PriceSidebar({ formData, setFormData, pricesData, settingsVars = {}, isOpen, onToggle, formSubmitted, onGoToForm, onPlanSelect, providersData }) {
   const [localKwh, setLocalKwh] = useState(null)
   const [localNightKwh, setLocalNightKwh] = useState(null)
   const isDragging = useRef(false)
@@ -61,6 +61,11 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
 
   const kWh = localKwh !== null ? localKwh : formData.kwhConsumption
   const nightKwh = localNightKwh !== null ? localNightKwh : formData.nightKwhConsumption
+  const currentProviderName = useMemo(() => {
+    if (!formData.provider || formData.provider === 'unknown' || !providersData?.length) return null
+    return providersData.find(p => p.id === formData.provider)?.name || null
+  }, [formData.provider, providersData])
+
   const [activeFilters, setActiveFilters] = useState(new Set())
   const [expandedCard, setExpandedCard] = useState(null)
   const [activeTab, setActiveTab] = useState('charges')

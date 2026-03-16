@@ -342,6 +342,20 @@
   border-bottom: 1px solid var(--overlay-medium);
 }
 
+.detail-accepted-formats {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+.detail-provider-change-note {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
 .detail-form-group {
   display: flex;
   flex-direction: column;

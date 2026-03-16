@@ -87,7 +87,7 @@ const SECTIONS = [
   { title: 'Υποβολή', step: 3 },
 ]
 
-export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formData, submissionId }) {
+export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formData, submissionId, providersData }) {
   const [activeStep, setActiveStep] = useState(0)
   const sectionRefs = useRef([])
 
@@ -100,76 +100,77 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
   const [detailForm, setDetailForm] = useState({
     afm: '',
     doy: '',
-    yparxeiMetritis: false,
-    eisaiIdioktitis: false,
-    paroxiStatus: 'energi',
-    idpiothsia: '',
-    yparxounOfeiles: false,
-    idiosOfeiletis: false,
-    eidikoTimologio: false,
-    nyxterino: false,
-    ligmeniYde: false,
-    allagiIsxyos: false,
     pagiaEntoli: false,
+    idiotita: '',
+    iban: '',
+    onomaDikaiouhou: '',
+    onomaTrapezas: '',
+    ibanTritosProsopo: false,
+    protiSyndesi: false,
+    allagiOnomatos: false,
+    paraxorisiTrito: false,
+    energoYde: true,
+    ilektrodoteitai: true,
+    ofeilesPalioParoxou: false,
+    tiposEpixeirisis: '',
     afmIdioktiti: '',
+    onomaIdioktiti: '',
+    kinitoIdioktiti: '',
+    emailIdioktiti: '',
   })
   const [files, setFiles] = useState({
     logariasmos: [],
     tautotitaMprosta: [],
     tautotitaPiso: [],
     metritis: [],
-    titlosIdioktisias: [],
-    oikodomikiAdeia: [],
-    dilosiTetragonikon: [],
-    ilektrologikoMisthotirio: [],
-    lixiarxikiPraxiThanatou: [],
-    pistopoiitikoEgyteronSygenon: [],
-    pistopoiitikoMiApopoiisis: [],
+    diakanonismos: [],
+    pliromiTeleftaiasDosis: [],
+    symvasiDeddie: [],
+    ypeuthiniDilosiIban: [],
     e9: [],
-    epiveveiosiArithmouParoxis: [],
-    yde: [],
-    ilektrologikoSxedio: [],
-    apodeixiPliromisSyndesis: [],
-    e2e9: [],
-    ypeuthiniDilosiIdioktiti: [],
-    tautotitaIdioktiti: [],
-    apodeixiPliromis: [],
-    misthotirioTitlos: [],
-    ypeuthiniDilosiMiSxesis: [],
+    ypeuthiniDilosiParaxorisis: [],
+    enarxiDrastiriotitas: [],
+    katastatiko: [],
+    tautotitaNomimouEkprosopou: [],
+    metritisAeriou: [],
   })
 
   const isStep1Valid = detailForm.afm.trim() !== '' &&
-    detailForm.doy.trim() !== '' &&
-    detailForm.idpiothsia !== ''
+    detailForm.doy.trim() !== ''
 
-  const PROVIDER_KEY_TO_NAME = {
-    'dei': 'ΔΕΗ',
-    'enerwave': 'ENERWAVE',
-    'eynice': 'EUNICE',
-    'hron': 'ΗΡΩΝ',
-    'protergia': 'PROTERGIA',
-    'zenith': 'ΖΕΝΙΘ',
-  }
+  const currentProviderName = useMemo(() => {
+    if (!formData?.provider || formData.provider === 'unknown' || !providersData?.length) return null
+    return providersData.find(p => p.id === formData.provider)?.name || null
+  }, [formData?.provider, providersData])
 
-  const isProviderChange = formData?.provider &&
-    formData.provider !== 'unknown' &&
+  const isProfessional = formData?.customerType === 'professional' && selectedPlan?.service_type !== 'gas'
+
+  const isProviderChange = currentProviderName &&
     selectedPlan?.provider &&
-    PROVIDER_KEY_TO_NAME[formData.provider]?.toUpperCase() !== selectedPlan.provider.toUpperCase()
+    currentProviderName.toUpperCase() !== selectedPlan.provider.toUpperCase()
 
-  const hasStep2Content =
-    detailForm.paroxiStatus === 'anenregi' ||
-    detailForm.idpiothsia === 'Ενοικιαστής' ||
-    detailForm.idpiothsia === 'Κληρονόμος' ||
-    detailForm.idpiothsia === 'Ιδιοκτήτης' ||
-    detailForm.idpiothsia === 'Δωρεάν Παραχώρηση' ||
-    detailForm.yparxounOfeiles
+  const isGas = selectedPlan?.service_type === 'gas'
+
+  const isZenithPagia = detailForm.pagiaEntoli && selectedPlan?.provider?.toUpperCase() === 'ΖΕΝΙΘ'
+
+  const isIdioktitisE9 = detailForm.allagiOnomatos && (!isProviderChange || isGas) && detailForm.idiotita === 'Ιδιοκτήτης'
+
+  const isParaxorisi = isIdioktitisE9 && detailForm.paraxorisiTrito
+
+  const isGasMetritis = selectedPlan?.service_type === 'gas' &&
+    (formData?.region === 'thessaloniki' || formData?.region === 'larisa')
+
+  const isGasEnikiasti = isGas &&
+    formData?.region === 'attiki' &&
+    detailForm.allagiOnomatos &&
+    detailForm.idiotita === 'Ενοικιαστής'
+
+  const hasStep2Content = isProviderChange || detailForm.protiSyndesi || isZenithPagia || isIdioktitisE9 || isParaxorisi || isGasMetritis
 
   const isStep2Valid = true
 
-  const ALLOWED_TYPES = ['application/pdf', 'image/png', 'image/jpeg']
-
   const handleFileChange = (field) => (e) => {
-    const newFiles = Array.from(e.target.files || []).filter(f => ALLOWED_TYPES.includes(f.type))
+    const newFiles = Array.from(e.target.files || [])
     if (newFiles.length === 0) return
     setFiles(prev => ({ ...prev, [field]: [...prev[field], ...newFiles] }))
     e.target.value = ''
@@ -218,30 +219,30 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
         logariasmosUrls,
         tautotitaMprostaUrls, tautotitaPisoUrls,
         metritisUrls,
-        ilektrologikoMisthotirioUrls,
-        lixiarxikiPraxiThanatouUrls, pistopoiitikoEgyteronSygenonUrls,
-        pistopoiitikoMiApopoiisisUrls, e9Urls,
-        epiveveiosiArithmouParoxisUrls,
-        titlosIdioktisiasUrls, oikodomikiAdeiaUrls,
-        dilosiTetragonikonUrls, ydeUrls,
-        ilektrologikoSxedioUrls, apodeixiPliromisSyndesisUrls
+        diakanonismosUrls, pliromiTeleftaiasDosisUrls,
+        symvasiDeddieUrls,
+        ypeuthiniDilosiIbanUrls,
+        e9Urls,
+        ypeuthiniDilosiParaxorisisUrls,
+        enarxiDrastiriotirasUrls,
+        katastatikoUrls,
+        tautotitaNomimouEkprosopouUrls,
+        metritisAeriouUrls
       ] = await Promise.all([
         uploadFiles(files.logariasmos, `${folder}/logariasmos`),
         uploadFiles(files.tautotitaMprosta, `${folder}/tautotita_mprosta`),
         uploadFiles(files.tautotitaPiso, `${folder}/tautotita_piso`),
         uploadFiles(files.metritis, `${folder}/metritis`),
-        uploadFiles(files.ilektrologikoMisthotirio, `${folder}/ilektrologiko_misthotirio`),
-        uploadFiles(files.lixiarxikiPraxiThanatou, `${folder}/lixiarxiki_praxi_thanatou`),
-        uploadFiles(files.pistopoiitikoEgyteronSygenon, `${folder}/pistopoiitiko_egyteron_sygenon`),
-        uploadFiles(files.pistopoiitikoMiApopoiisis, `${folder}/pistopoiitiko_mi_apopoiisis`),
+        uploadFiles(files.diakanonismos, `${folder}/diakanonismos`),
+        uploadFiles(files.pliromiTeleftaiasDosis, `${folder}/pliromi_teleftaias_dosis`),
+        uploadFiles(files.symvasiDeddie, `${folder}/symvasi_deddie`),
+        uploadFiles(files.ypeuthiniDilosiIban, `${folder}/ypeuthini_dilosi_iban`),
         uploadFiles(files.e9, `${folder}/e9`),
-        uploadFiles(files.epiveveiosiArithmouParoxis, `${folder}/epiveveiosi_arithmou_paroxis`),
-        uploadFiles(files.titlosIdioktisias, `${folder}/titlos_idioktisias`),
-        uploadFiles(files.oikodomikiAdeia, `${folder}/oikodomiki_adeia`),
-        uploadFiles(files.dilosiTetragonikon, `${folder}/dilosi_tetragonikon`),
-        uploadFiles(files.yde, `${folder}/yde`),
-        uploadFiles(files.ilektrologikoSxedio, `${folder}/ilektrologiko_sxedio`),
-        uploadFiles(files.apodeixiPliromisSyndesis, `${folder}/apodeixi_pliromis_syndesis`),
+        uploadFiles(files.ypeuthiniDilosiParaxorisis, `${folder}/ypeuthini_dilosi_paraxorisis`),
+        uploadFiles(files.enarxiDrastiriotitas, `${folder}/enarxi_drastiriotitas`),
+        uploadFiles(files.katastatiko, `${folder}/katastatiko`),
+        uploadFiles(files.tautotitaNomimouEkprosopou, `${folder}/tautotita_nomimou_ekprosopou`),
+        uploadFiles(files.metritisAeriou, `${folder}/metritis_aeriou`),
       ])
 
       const updateData = {
@@ -256,35 +257,39 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
         detail_form: {
           afm: detailForm.afm,
           doy: detailForm.doy,
-          yparxei_metritis: detailForm.yparxeiMetritis,
-          eisai_idioktitis: !detailForm.yparxeiMetritis ? detailForm.eisaiIdioktitis : null,
-          paroxi_status: detailForm.paroxiStatus,
-          idpiothsia: detailForm.idpiothsia,
-          yparxoun_ofeiles: detailForm.yparxounOfeiles,
-          idios_ofeiletis: detailForm.yparxounOfeiles ? detailForm.idiosOfeiletis : null,
-          eidiko_timologio: detailForm.eidikoTimologio,
-          nyxterino: detailForm.nyxterino,
-          ligmeni_yde: detailForm.idpiothsia === 'Ενοικιαστής' ? detailForm.ligmeniYde : null,
-          allagi_isxyos: detailForm.allagiIsxyos,
           pagia_entoli: detailForm.pagiaEntoli,
+          allagi_onomatos: detailForm.allagiOnomatos,
+          idiotita: (detailForm.allagiOnomatos && (!isProviderChange || isGas)) ? detailForm.idiotita : null,
+          paraxorisi_trito: isIdioktitisE9 ? detailForm.paraxorisiTrito : null,
+          energo_yde: isParaxorisi ? detailForm.energoYde : null,
+          ilektrodoteitai: (isParaxorisi && detailForm.energoYde === false) ? detailForm.ilektrodoteitai : null,
+          iban: detailForm.pagiaEntoli ? detailForm.iban : null,
+          onoma_dikaiouhou: detailForm.pagiaEntoli ? detailForm.onomaDikaiouhou : null,
+          onoma_trapezas: detailForm.pagiaEntoli ? detailForm.onomaTrapezas : null,
+          iban_tritos_prosopo: detailForm.pagiaEntoli ? detailForm.ibanTritosProsopo : null,
+          proti_syndesi: detailForm.protiSyndesi,
+          ofeiles_palio_paroxou: isProviderChange ? detailForm.ofeilesPalioParoxou : null,
+          tipos_epixeirisis: isProfessional ? detailForm.tiposEpixeirisis : null,
+          afm_idioktiti: isGasEnikiasti ? detailForm.afmIdioktiti : null,
+          onoma_idioktiti: isGasEnikiasti ? detailForm.onomaIdioktiti : null,
+          kinito_idioktiti: isGasEnikiasti ? detailForm.kinitoIdioktiti : null,
+          email_idioktiti: isGasEnikiasti ? detailForm.emailIdioktiti : null,
         },
         uploaded_files: {
           logariasmos: logariasmosUrls,
           tautotita_mprosta: tautotitaMprostaUrls,
           tautotita_piso: tautotitaPisoUrls,
           metritis: metritisUrls,
-          ilektrologiko_misthotirio: ilektrologikoMisthotirioUrls,
-          lixiarxiki_praxi_thanatou: lixiarxikiPraxiThanatouUrls,
-          pistopoiitiko_egyteron_sygenon: pistopoiitikoEgyteronSygenonUrls,
-          pistopoiitiko_mi_apopoiisis: pistopoiitikoMiApopoiisisUrls,
+          diakanonismos: diakanonismosUrls,
+          pliromi_teleftaias_dosis: pliromiTeleftaiasDosisUrls,
+          symvasi_deddie: symvasiDeddieUrls,
+          ypeuthini_dilosi_iban: ypeuthiniDilosiIbanUrls,
           e9: e9Urls,
-          epiveveiosi_arithmou_paroxis: epiveveiosiArithmouParoxisUrls,
-          titlos_idioktisias: titlosIdioktisiasUrls,
-          oikodomiki_adeia: oikodomikiAdeiaUrls,
-          dilosi_tetragonikon: dilosiTetragonikonUrls,
-          yde: ydeUrls,
-          ilektrologiko_sxedio: ilektrologikoSxedioUrls,
-          apodeixi_pliromis_syndesis: apodeixiPliromisSyndesisUrls,
+          ypeuthini_dilosi_paraxorisis: ypeuthiniDilosiParaxorisisUrls,
+          enarxi_drastiriotitas: enarxiDrastiriotirasUrls,
+          katastatiko: katastatikoUrls,
+          tautotita_nomimou_ekprosopou: tautotitaNomimouEkprosopouUrls,
+          metritis_aeriou: metritisAeriouUrls,
         },
       }
 
@@ -385,11 +390,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                     )}
                   </div>
                   <h4 className="detail-section-title">{title}</h4>
-                  {step === 2 && (
-                    <span className="detail-section-hint">
-                      Τα παρακάτω πεδία είναι προαιρετικά. Επισυνάψτε ό,τι έχετε διαθέσιμο — για τα υπόλοιπα θα επικοινωνήσει μαζί σας ο εκπρόσωπός μας.
-                    </span>
-                  )}
+                  {step === 1 && <span className="detail-accepted-formats">Αποδεκτοί όλοι οι τύποι αρχείων</span>}
                 </div>
 
                 <div className="detail-section-body">
@@ -419,7 +420,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                     </div>
                   )}
 
-                  {step === 1 && (
+                  {step === 1 && isProfessional && (
                     <div className="detail-form">
                       <div className="detail-form-subsection">
                         <h5 className="detail-form-subtitle">Προσωπικά Στοιχεία</h5>
@@ -429,7 +430,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                           <div className="detail-upload-row">
                             <div className="detail-upload-col">
                               <label className={`detail-upload-card ${files.tautotitaMprosta.length ? 'has-file' : ''}`}>
-                                <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('tautotitaMprosta')} />
+                                <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotitaMprosta')} />
                                 <img src={idFront} alt="Μπροστά όψη" className="detail-upload-card-icon" />
                                 <span className="detail-upload-card-label"><UploadIcon />Μπροστά όψη</span>
                               </label>
@@ -437,7 +438,156 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             </div>
                             <div className="detail-upload-col">
                               <label className={`detail-upload-card ${files.tautotitaPiso.length ? 'has-file' : ''}`}>
-                                <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('tautotitaPiso')} />
+                                <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotitaPiso')} />
+                                <img src={idBack} alt="Πίσω όψη" className="detail-upload-card-icon" />
+                                <span className="detail-upload-card-label"><UploadIcon />Πίσω όψη</span>
+                              </label>
+                              <FilePreviewList files={files.tautotitaPiso} field="tautotitaPiso" onRemove={removeFile} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="detail-form-group">
+                          <label>ΑΦΜ <span className="detail-required">*</span></label>
+                          <input
+                            type="text"
+                            value={detailForm.afm}
+                            onChange={(e) => setDetailForm(prev => ({ ...prev, afm: e.target.value }))}
+                            placeholder="Εισάγετε ΑΦΜ"
+                            required
+                          />
+                        </div>
+
+                        <div className="detail-form-group">
+                          <label>ΔΟΥ <span className="detail-required">*</span></label>
+                          <input
+                            type="text"
+                            value={detailForm.doy}
+                            onChange={(e) => setDetailForm(prev => ({ ...prev, doy: e.target.value }))}
+                            placeholder="Εισάγετε ΔΟΥ"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="detail-form-subsection">
+                        <h5 className="detail-form-subtitle">Στοιχεία Παροχής Ρεύματος</h5>
+
+                        {isProviderChange && (
+                          <p className="detail-provider-change-note">
+                            Πρόκειται για αλλαγή παρόχου.
+                          </p>
+                        )}
+
+                        <div className="detail-toggle-list">
+                          <YesNoToggle
+                            label="Πάγια εντολή;"
+                            value={detailForm.pagiaEntoli}
+                            onChange={v => setDetailForm(prev => ({ ...prev, pagiaEntoli: v }))}
+                          />
+                          <YesNoToggle
+                            label="Πρώτη σύνδεση;"
+                            value={detailForm.protiSyndesi}
+                            onChange={v => setDetailForm(prev => ({ ...prev, protiSyndesi: v }))}
+                          />
+                          {isZenithPagia && (
+                            <YesNoToggle
+                              label="Το IBAN ανήκει σε 3ο πρόσωπο;"
+                              value={detailForm.ibanTritosProsopo}
+                              onChange={v => setDetailForm(prev => ({ ...prev, ibanTritosProsopo: v }))}
+                            />
+                          )}
+                          {isProviderChange && (
+                            <YesNoToggle
+                              label="Υπάρχουν οφειλές στον προηγούμενο πάροχο;"
+                              value={detailForm.ofeilesPalioParoxou}
+                              onChange={v => setDetailForm(prev => ({ ...prev, ofeilesPalioParoxou: v }))}
+                            />
+                          )}
+                          <YesNoToggle
+                            label="Αλλαγή ονόματος;"
+                            value={detailForm.allagiOnomatos}
+                            onChange={v => setDetailForm(prev => ({ ...prev, allagiOnomatos: v }))}
+                          />
+                        </div>
+                        {detailForm.allagiOnomatos && (!isProviderChange || isGas) && (
+                          <div className="detail-form-group">
+                            <label>Ιδιότητα <span className="detail-required">*</span></label>
+                            <div className="detail-form-options">
+                              {['Ενοικιαστής', 'Ιδιοκτήτης'].map(option => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  className={`detail-form-option-btn ${detailForm.idiotita === option ? 'active' : ''}`}
+                                  onClick={() => setDetailForm(prev => ({ ...prev, idiotita: option }))}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {isIdioktitisE9 && (
+                          <div className="detail-toggle-list">
+                            <YesNoToggle
+                              label="Παραχώρηση σε 3ο άτομο;"
+                              value={detailForm.paraxorisiTrito}
+                              onChange={v => setDetailForm(prev => ({ ...prev, paraxorisiTrito: v }))}
+                            />
+                            {isParaxorisi && (
+                              <YesNoToggle
+                                label="Ενεργό ΥΔΕ;"
+                                value={detailForm.energoYde}
+                                onChange={v => setDetailForm(prev => ({ ...prev, energoYde: v }))}
+                              />
+                            )}
+                            {isParaxorisi && detailForm.energoYde === false && (
+                              <YesNoToggle
+                                label="Ηλεκτροδοτείται;"
+                                value={detailForm.ilektrodoteitai}
+                                onChange={v => setDetailForm(prev => ({ ...prev, ilektrodoteitai: v }))}
+                              />
+                            )}
+                          </div>
+                        )}
+                        <div className="detail-form-group">
+                          <label>Τύπος επιχείρησης <span className="detail-required">*</span></label>
+                          <div className="detail-form-options">
+                            {['Ατομική', 'Εταιρία'].map(option => (
+                              <button
+                                key={option}
+                                type="button"
+                                className={`detail-form-option-btn ${detailForm.tiposEpixeirisis === option ? 'active' : ''}`}
+                                onClick={() => setDetailForm(prev => ({ ...prev, tiposEpixeirisis: option }))}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {step === 1 && !isProfessional && (
+                    <div className="detail-form">
+                      <div className="detail-form-subsection">
+                        <h5 className="detail-form-subtitle">Προσωπικά Στοιχεία</h5>
+
+                        <div className="detail-form-group">
+                          <label>Ταυτότητα / Διαβατήριο <span className="detail-required">*</span></label>
+                          <div className="detail-upload-row">
+                            <div className="detail-upload-col">
+                              <label className={`detail-upload-card ${files.tautotitaMprosta.length ? 'has-file' : ''}`}>
+                                <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotitaMprosta')} />
+                                <img src={idFront} alt="Μπροστά όψη" className="detail-upload-card-icon" />
+                                <span className="detail-upload-card-label"><UploadIcon />Μπροστά όψη</span>
+                              </label>
+                              <FilePreviewList files={files.tautotitaMprosta} field="tautotitaMprosta" onRemove={removeFile} />
+                            </div>
+                            <div className="detail-upload-col">
+                              <label className={`detail-upload-card ${files.tautotitaPiso.length ? 'has-file' : ''}`}>
+                                <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotitaPiso')} />
                                 <img src={idBack} alt="Πίσω όψη" className="detail-upload-card-icon" />
                                 <span className="detail-upload-card-label"><UploadIcon />Πίσω όψη</span>
                               </label>
@@ -471,7 +621,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                         <div className="detail-form-group">
                           <label>Φωτογραφία λογαριασμού</label>
                           <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
-                            <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('logariasmos')} />
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
                             <img src={billFront} alt="Λογαριασμός" className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label"><UploadIcon />Όλες οι σελίδες</span>
                           </label>
@@ -481,7 +631,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                         <div className="detail-form-group">
                           <label>Φωτογραφία μετρητή</label>
                           <label className={`detail-upload-card ${files.metritis.length ? 'has-file' : ''}`}>
-                            <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('metritis')} />
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritis')} />
                             <img src={powerMeter} alt="Μετρητής" className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label"><UploadIcon />Φωτογραφία μετρητή & ενδείξεων</span>
                           </label>
@@ -494,73 +644,237 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
 
                         <div className="detail-toggle-list">
                           <YesNoToggle
-                            label="Υπάρχει μετρητής;"
-                            value={detailForm.yparxeiMetritis}
-                            onChange={v => setDetailForm(prev => ({ ...prev, yparxeiMetritis: v }))}
-                          />
-                          <YesNoToggle
-                            label="Ενεργή Παροχή:"
-                            value={detailForm.paroxiStatus}
-                            onChange={v => setDetailForm(prev => ({ ...prev, paroxiStatus: v }))}
-                            options={[
-                              { label: 'Ναι', value: 'energi' },
-                              { label: 'Όχι', value: 'anenregi' },
-                            ]}
-                          />
-                          <YesNoToggle
-                            label="Υπάρχουν οφειλές;"
-                            value={detailForm.yparxounOfeiles}
-                            onChange={v => setDetailForm(prev => ({ ...prev, yparxounOfeiles: v }))}
-                          />
-                          {detailForm.yparxounOfeiles === true && (
-                            <YesNoToggle
-                              label="Ίδιος οφειλέτης;"
-                              value={detailForm.idiosOfeiletis}
-                              onChange={v => setDetailForm(prev => ({ ...prev, idiosOfeiletis: v }))}
-                            />
-                          )}
-                          <YesNoToggle
-                            label="Ειδικό τιμολόγιο;"
-                            value={detailForm.eidikoTimologio}
-                            onChange={v => setDetailForm(prev => ({ ...prev, eidikoTimologio: v }))}
-                          />
-                          <YesNoToggle
-                            label="Νυχτερινό;"
-                            value={detailForm.nyxterino}
-                            onChange={v => setDetailForm(prev => ({ ...prev, nyxterino: v }))}
-                          />
-                          <YesNoToggle
-                            label="Αλλαγή ισχύος;"
-                            value={detailForm.allagiIsxyos}
-                            onChange={v => setDetailForm(prev => ({ ...prev, allagiIsxyos: v }))}
+                            label="Πρώτη σύνδεση;"
+                            value={detailForm.protiSyndesi}
+                            onChange={v => setDetailForm(prev => ({ ...prev, protiSyndesi: v }))}
                           />
                           <YesNoToggle
                             label="Πάγια εντολή;"
                             value={detailForm.pagiaEntoli}
                             onChange={v => setDetailForm(prev => ({ ...prev, pagiaEntoli: v }))}
                           />
-                        </div>
-
-                        <div className="detail-form-group">
-                          <label>Ιδιότητα <span className="detail-required">*</span></label>
-                          <div className="detail-form-options">
-                            {['Ενοικιαστής', 'Κληρονόμος', 'Ιδιοκτήτης', 'Δωρεάν Παραχώρηση'].map(option => (
-                              <button
-                                key={option}
-                                type="button"
-                                className={`detail-form-option-btn ${detailForm.idpiothsia === option ? 'active' : ''}`}
-                                onClick={() => setDetailForm(prev => ({ ...prev, idpiothsia: option }))}
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
+                          {isZenithPagia && (
+                            <YesNoToggle
+                              label="Το IBAN ανήκει σε 3ο πρόσωπο;"
+                              value={detailForm.ibanTritosProsopo}
+                              onChange={v => setDetailForm(prev => ({ ...prev, ibanTritosProsopo: v }))}
+                            />
+                          )}
+                          <YesNoToggle
+                            label="Αλλαγή ονόματος;"
+                            value={detailForm.allagiOnomatos}
+                            onChange={v => setDetailForm(prev => ({ ...prev, allagiOnomatos: v }))}
+                          />
+                          {isProviderChange && (
+                            <YesNoToggle
+                              label="Υπάρχουν οφειλές στον προηγούμενο πάροχο;"
+                              value={detailForm.ofeilesPalioParoxou}
+                              onChange={v => setDetailForm(prev => ({ ...prev, ofeilesPalioParoxou: v }))}
+                            />
+                          )}
                         </div>
                       </div>
+
+                      {detailForm.allagiOnomatos && (!isProviderChange || isGas) && (
+                        <div className="detail-form-subsection">
+                          <div className="detail-form-group">
+                            <label>Ιδιότητα <span className="detail-required">*</span></label>
+                            <div className="detail-form-options">
+                              {['Ενοικιαστής', 'Ιδιοκτήτης'].map(option => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  className={`detail-form-option-btn ${detailForm.idiotita === option ? 'active' : ''}`}
+                                  onClick={() => setDetailForm(prev => ({ ...prev, idiotita: option }))}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          {isIdioktitisE9 && (
+                            <div className="detail-toggle-list">
+                              <YesNoToggle
+                                label="Παραχώρηση σε 3ο άτομο;"
+                                value={detailForm.paraxorisiTrito}
+                                onChange={v => setDetailForm(prev => ({ ...prev, paraxorisiTrito: v }))}
+                              />
+                              {isParaxorisi && (
+                                <YesNoToggle
+                                  label="Ενεργό ΥΔΕ;"
+                                  value={detailForm.energoYde}
+                                  onChange={v => setDetailForm(prev => ({ ...prev, energoYde: v }))}
+                                />
+                              )}
+                              {isParaxorisi && detailForm.energoYde === false && (
+                                <YesNoToggle
+                                  label="Ηλεκτροδοτείται;"
+                                  value={detailForm.ilektrodoteitai}
+                                  onChange={v => setDetailForm(prev => ({ ...prev, ilektrodoteitai: v }))}
+                                />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {step === 2 && (
+                  {step === 2 && isProfessional && (
+                    <div className="detail-form">
+                      {isProviderChange && (
+                        <>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Φωτογραφία λογαριασμού <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
+                              <img src={billFront} alt="Λογαριασμός" className="detail-upload-card-icon" />
+                              <span className="detail-upload-card-label"><UploadIcon />Όλες οι σελίδες</span>
+                            </label>
+                            <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} />
+                          </div>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Φωτογραφία μετρητή <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.metritis.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritis')} />
+                              <img src={powerMeter} alt="Μετρητής" className="detail-upload-card-icon" />
+                              <span className="detail-upload-card-label"><UploadIcon />Φωτογραφία μετρητή & ενδείξεων</span>
+                            </label>
+                            <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} />
+                          </div>
+                        </>
+                      )}
+                      {isProviderChange && detailForm.ofeilesPalioParoxou && (
+                        <>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Διακανονισμός <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.diakanonismos.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('diakanonismos')} />
+                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                            </label>
+                            <FilePreviewList files={files.diakanonismos} field="diakanonismos" onRemove={removeFile} />
+                          </div>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Πληρωμή τελευταίας δόσης <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.pliromiTeleftaiasDosis.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('pliromiTeleftaiasDosis')} />
+                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                            </label>
+                            <FilePreviewList files={files.pliromiTeleftaiasDosis} field="pliromiTeleftaiasDosis" onRemove={removeFile} />
+                          </div>
+                        </>
+                      )}
+                      {detailForm.tiposEpixeirisis === 'Ατομική' && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Έναρξη δραστηριότητας <span className="detail-required">*</span></h5>
+                          <label className={`detail-upload-card ${files.enarxiDrastiriotitas.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('enarxiDrastiriotitas')} />
+                            <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                          </label>
+                          <FilePreviewList files={files.enarxiDrastiriotitas} field="enarxiDrastiriotitas" onRemove={removeFile} />
+                        </div>
+                      )}
+                      {detailForm.tiposEpixeirisis === 'Εταιρία' && (
+                        <>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Καταστατικό <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.katastatiko.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('katastatiko')} />
+                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                            </label>
+                            <FilePreviewList files={files.katastatiko} field="katastatiko" onRemove={removeFile} />
+                          </div>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Ταυτότητα νόμιμου εκπροσώπου <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.tautotitaNomimouEkprosopou.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotitaNomimouEkprosopou')} />
+                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                            </label>
+                            <FilePreviewList files={files.tautotitaNomimouEkprosopou} field="tautotitaNomimouEkprosopou" onRemove={removeFile} />
+                          </div>
+                        </>
+                      )}
+                      {detailForm.protiSyndesi && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Σύμβαση με ΔΕΔΔΗΕ <span className="detail-required">*</span></h5>
+                          <label className={`detail-upload-card ${files.symvasiDeddie.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('symvasiDeddie')} />
+                            <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                          </label>
+                          <FilePreviewList files={files.symvasiDeddie} field="symvasiDeddie" onRemove={removeFile} />
+                        </div>
+                      )}
+                      {isZenithPagia && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Στοιχεία Πάγιας Εντολής</h5>
+                          <div className="detail-form-group">
+                            <label>IBAN <span className="detail-required">*</span></label>
+                            <input
+                              type="text"
+                              value={detailForm.iban}
+                              onChange={e => setDetailForm(prev => ({ ...prev, iban: e.target.value }))}
+                              placeholder="GR00 0000 0000 0000 0000 0000 000"
+                            />
+                          </div>
+                          <div className="detail-form-group">
+                            <label>Όνομα δικαιούχου <span className="detail-required">*</span></label>
+                            <input
+                              type="text"
+                              value={detailForm.onomaDikaiouhou}
+                              onChange={e => setDetailForm(prev => ({ ...prev, onomaDikaiouhou: e.target.value }))}
+                              placeholder="Εισάγετε όνομα δικαιούχου"
+                            />
+                          </div>
+                          <div className="detail-form-group">
+                            <label>Όνομα τράπεζας <span className="detail-required">*</span></label>
+                            <input
+                              type="text"
+                              value={detailForm.onomaTrapezas}
+                              onChange={e => setDetailForm(prev => ({ ...prev, onomaTrapezas: e.target.value }))}
+                              placeholder="Εισάγετε όνομα τράπεζας"
+                            />
+                          </div>
+                          {detailForm.ibanTritosProsopo && (
+                            <div className="detail-form-group">
+                              <label>Υπεύθυνη δήλωση IBAN <span className="detail-required">*</span></label>
+                              <label className={`detail-upload-card ${files.ypeuthiniDilosiIban.length ? 'has-file' : ''}`}>
+                                <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('ypeuthiniDilosiIban')} />
+                                <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                              </label>
+                              <FilePreviewList files={files.ypeuthiniDilosiIban} field="ypeuthiniDilosiIban" onRemove={removeFile} />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {isIdioktitisE9 && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Ε9 <span className="detail-required">*</span></h5>
+                          <label className={`detail-upload-card ${files.e9.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('e9')} />
+                            <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                          </label>
+                          <FilePreviewList files={files.e9} field="e9" onRemove={removeFile} />
+                        </div>
+                      )}
+                      {isParaxorisi && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Υπεύθυνη δήλωση παραχώρησης <span className="detail-required">*</span></h5>
+                          <label className={`detail-upload-card ${files.ypeuthiniDilosiParaxorisis.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('ypeuthiniDilosiParaxorisis')} />
+                            <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                          </label>
+                          <FilePreviewList files={files.ypeuthiniDilosiParaxorisis} field="ypeuthiniDilosiParaxorisis" onRemove={removeFile} />
+                        </div>
+                      )}
+                      {!detailForm.tiposEpixeirisis && (
+                        <p className="detail-step2-empty">
+                          Επίλεξε τύπο επιχείρησης στο προηγούμενο βήμα.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {step === 2 && !isProfessional && (
                     <div className="detail-form">
                       {!hasStep2Content && (
                         <p className="detail-step2-empty">
@@ -568,203 +882,151 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                         </p>
                       )}
 
-                      {/* Ανενεργή παροχή → επιβεβαίωση αριθμού παροχής + ΥΔΕ */}
-                      {detailForm.paroxiStatus === 'anenregi' && (
+                      {/* Αλλαγή Παρόχου → λογαριασμός + μετρητής */}
+                      {isProviderChange && (
                         <>
                           <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Επιβεβαίωση αριθμού παροχής</h5>
-                            <label className={`detail-upload-card ${files.epiveveiosiArithmouParoxis.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('epiveveiosiArithmouParoxis')} />
+                            <h5 className="detail-form-subtitle">Φωτογραφία λογαριασμού <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
+                              <img src={billFront} alt="Λογαριασμός" className="detail-upload-card-icon" />
+                              <span className="detail-upload-card-label"><UploadIcon />Όλες οι σελίδες</span>
+                            </label>
+                            <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} />
+                          </div>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Φωτογραφία μετρητή <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.metritis.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritis')} />
+                              <img src={powerMeter} alt="Μετρητής" className="detail-upload-card-icon" />
+                              <span className="detail-upload-card-label"><UploadIcon />Φωτογραφία μετρητή & ενδείξεων</span>
+                            </label>
+                            <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} />
+                          </div>
+                        </>
+                      )}
+
+                      {/* Αλλαγή Παρόχου + Οφειλές → διακανονισμός + πληρωμή τελευταίας δόσης */}
+                      {isProviderChange && detailForm.ofeilesPalioParoxou && (
+                        <>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Διακανονισμός <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.diakanonismos.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('diakanonismos')} />
                               <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
                             </label>
-                            <FilePreviewList files={files.epiveveiosiArithmouParoxis} field="epiveveiosiArithmouParoxis" onRemove={removeFile} />
+                            <FilePreviewList files={files.diakanonismos} field="diakanonismos" onRemove={removeFile} />
                           </div>
+                          <div className="detail-form-subsection">
+                            <h5 className="detail-form-subtitle">Πληρωμή τελευταίας δόσης <span className="detail-required">*</span></h5>
+                            <label className={`detail-upload-card ${files.pliromiTeleftaiasDosis.length ? 'has-file' : ''}`}>
+                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('pliromiTeleftaiasDosis')} />
+                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                            </label>
+                            <FilePreviewList files={files.pliromiTeleftaiasDosis} field="pliromiTeleftaiasDosis" onRemove={removeFile} />
+                          </div>
+                        </>
+                      )}
 
-                          {detailForm.idpiothsia !== 'Ενοικιαστής' && detailForm.idpiothsia !== 'Ιδιοκτήτης' && (
-                            <div className="detail-form-subsection">
-                              <h5 className="detail-form-subtitle">ΥΔΕ</h5>
-                              <label className={`detail-upload-card ${files.yde.length ? 'has-file' : ''}`}>
-                                <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('yde')} />
+                      {/* Πάγια εντολή + ΖΕΝΙΘ → IBAN, δικαιούχος, τράπεζα */}
+                      {isZenithPagia && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Στοιχεία Πάγιας Εντολής</h5>
+                          <div className="detail-form-group">
+                            <label>IBAN <span className="detail-required">*</span></label>
+                            <input
+                              type="text"
+                              value={detailForm.iban}
+                              onChange={e => setDetailForm(prev => ({ ...prev, iban: e.target.value }))}
+                              placeholder="GR00 0000 0000 0000 0000 0000 000"
+                            />
+                          </div>
+                          <div className="detail-form-group">
+                            <label>Όνομα δικαιούχου <span className="detail-required">*</span></label>
+                            <input
+                              type="text"
+                              value={detailForm.onomaDikaiouhou}
+                              onChange={e => setDetailForm(prev => ({ ...prev, onomaDikaiouhou: e.target.value }))}
+                              placeholder="Εισάγετε όνομα δικαιούχου"
+                            />
+                          </div>
+                          <div className="detail-form-group">
+                            <label>Όνομα τράπεζας <span className="detail-required">*</span></label>
+                            <input
+                              type="text"
+                              value={detailForm.onomaTrapezas}
+                              onChange={e => setDetailForm(prev => ({ ...prev, onomaTrapezas: e.target.value }))}
+                              placeholder="Εισάγετε όνομα τράπεζας"
+                            />
+                          </div>
+                          {detailForm.ibanTritosProsopo && (
+                            <div className="detail-form-group">
+                              <label>Υπεύθυνη δήλωση IBAN <span className="detail-required">*</span></label>
+                              <label className={`detail-upload-card ${files.ypeuthiniDilosiIban.length ? 'has-file' : ''}`}>
+                                <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('ypeuthiniDilosiIban')} />
                                 <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
                               </label>
-                              <FilePreviewList files={files.yde} field="yde" onRemove={removeFile} />
+                              <FilePreviewList files={files.ypeuthiniDilosiIban} field="ypeuthiniDilosiIban" onRemove={removeFile} />
                             </div>
                           )}
-                        </>
+                        </div>
                       )}
 
-                      {/* Ενοικιαστής → μισθωτήριο, ληγμένη ΥΔΕ */}
-                      {detailForm.idpiothsia === 'Ενοικιαστής' && (
-                        <>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Ηλεκτρολογικό μισθωτήριο σε ισχύ</h5>
-                            <label className={`detail-upload-card ${files.ilektrologikoMisthotirio.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('ilektrologikoMisthotirio')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.ilektrologikoMisthotirio} field="ilektrologikoMisthotirio" onRemove={removeFile} />
-                          </div>
-
-                          <YesNoToggle
-                            label="Ληγμένη ΥΔΕ;"
-                            value={detailForm.ligmeniYde}
-                            onChange={v => setDetailForm(prev => ({ ...prev, ligmeniYde: v }))}
-                          />
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">{detailForm.ligmeniYde ? 'Νέα ΥΔΕ (με συναίνεση ιδιοκτήτη)' : 'ΥΔΕ'}</h5>
-                            <label className={`detail-upload-card ${files.yde.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('yde')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.yde} field="yde" onRemove={removeFile} />
-                          </div>
-                        </>
+                      {/* Πρώτη σύνδεση → σύμβαση με ΔΕΔΔΗΕ */}
+                      {detailForm.protiSyndesi && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Σύμβαση με ΔΕΔΔΗΕ <span className="detail-required">*</span></h5>
+                          <label className={`detail-upload-card ${files.symvasiDeddie.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('symvasiDeddie')} />
+                            <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                          </label>
+                          <FilePreviewList files={files.symvasiDeddie} field="symvasiDeddie" onRemove={removeFile} />
+                        </div>
                       )}
 
-                      {/* Κληρονόμος */}
-                      {detailForm.idpiothsia === 'Κληρονόμος' && (
-                        <>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Ληξιαρχική πράξη θανάτου</h5>
-                            <label className={`detail-upload-card ${files.lixiarxikiPraxiThanatou.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('lixiarxikiPraxiThanatou')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.lixiarxikiPraxiThanatou} field="lixiarxikiPraxiThanatou" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Πιστοποιητικό εγγυτέρων συγγενών</h5>
-                            <label className={`detail-upload-card ${files.pistopoiitikoEgyteronSygenon.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('pistopoiitikoEgyteronSygenon')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.pistopoiitikoEgyteronSygenon} field="pistopoiitikoEgyteronSygenon" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Πιστοποιητικό μη αποποίησης</h5>
-                            <label className={`detail-upload-card ${files.pistopoiitikoMiApopoiisis.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('pistopoiitikoMiApopoiisis')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.pistopoiitikoMiApopoiisis} field="pistopoiitikoMiApopoiisis" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Ε9</h5>
-                            <label className={`detail-upload-card ${files.e9.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('e9')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.e9} field="e9" onRemove={removeFile} />
-                          </div>
-                        </>
+                      {/* Ιδιοκτήτης (αλλαγή ονόματος, όχι αλλαγή παρόχου) → Ε9 */}
+                      {isIdioktitisE9 && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Ε9 <span className="detail-required">*</span></h5>
+                          <label className={`detail-upload-card ${files.e9.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('e9')} />
+                            <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                          </label>
+                          <FilePreviewList files={files.e9} field="e9" onRemove={removeFile} />
+                        </div>
                       )}
 
-                      {/* Ιδιοκτήτης → τίτλος/Ε9 + ληγμένη ΥΔΕ */}
-                      {detailForm.idpiothsia === 'Ιδιοκτήτης' && (
-                        <>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Τίτλος ιδιοκτησίας / Ε9</h5>
-                            <label className={`detail-upload-card ${files.titlosIdioktisias.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('titlosIdioktisias')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.titlosIdioktisias} field="titlosIdioktisias" onRemove={removeFile} />
-                          </div>
-
-                          <YesNoToggle
-                            label="Ληγμένη ΥΔΕ;"
-                            value={detailForm.ligmeniYde}
-                            onChange={v => setDetailForm(prev => ({ ...prev, ligmeniYde: v }))}
-                          />
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">{detailForm.ligmeniYde ? 'Νέα ΥΔΕ (με συναίνεση ιδιοκτήτη)' : 'ΥΔΕ'}</h5>
-                            <label className={`detail-upload-card ${files.yde.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('yde')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.yde} field="yde" onRemove={removeFile} />
-                          </div>
-                        </>
+                      {/* Παραχώρηση σε 3ο άτομο → υπεύθυνη δήλωση παραχώρησης */}
+                      {isParaxorisi && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Υπεύθυνη δήλωση παραχώρησης <span className="detail-required">*</span></h5>
+                          <label className={`detail-upload-card ${files.ypeuthiniDilosiParaxorisis.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('ypeuthiniDilosiParaxorisis')} />
+                            <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
+                          </label>
+                          <FilePreviewList files={files.ypeuthiniDilosiParaxorisis} field="ypeuthiniDilosiParaxorisis" onRemove={removeFile} />
+                        </div>
                       )}
 
-                      {/* Χωρίς μετρητή + Ιδιοκτήτης → νέα σύνδεση (επιπλέον πεδία) */}
-                      {detailForm.yparxeiMetritis === false && detailForm.idpiothsia === 'Ιδιοκτήτης' && (
-                        <>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Οικοδομική άδεια</h5>
-                            <label className={`detail-upload-card ${files.oikodomikiAdeia.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('oikodomikiAdeia')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.oikodomikiAdeia} field="oikodomikiAdeia" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Δήλωση τετραγωνικών</h5>
-                            <label className={`detail-upload-card ${files.dilosiTetragonikon.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('dilosiTetragonikon')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.dilosiTetragonikon} field="dilosiTetragonikon" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Ηλεκτρολογικό σχέδιο</h5>
-                            <label className={`detail-upload-card ${files.ilektrologikoSxedio.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('ilektrologikoSxedio')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.ilektrologikoSxedio} field="ilektrologikoSxedio" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Απόδειξη πληρωμής κόστους σύνδεσης</h5>
-                            <label className={`detail-upload-card ${files.apodeixiPliromisSyndesis.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('apodeixiPliromisSyndesis')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.apodeixiPliromisSyndesis} field="apodeixiPliromisSyndesis" onRemove={removeFile} />
-                          </div>
-                        </>
+                      {/* Αέριο + Θεσσαλονίκη/Θεσσαλία → μετρητής αερίου */}
+                      {isGasMetritis && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Φωτογραφία μετρητή αερίου <span className="detail-required">*</span></h5>
+                          <label className={`detail-upload-card ${files.metritisAeriou.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritisAeriou')} />
+                            <img src={powerMeter} alt="Μετρητής αερίου" className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label"><UploadIcon />Φωτογραφία μετρητή αερίου</span>
+                          </label>
+                          <FilePreviewList files={files.metritisAeriou} field="metritisAeriou" onRemove={removeFile} />
+                        </div>
                       )}
 
-                      {/* Δωρεάν Παραχώρηση */}
-                      {detailForm.idpiothsia === 'Δωρεάν Παραχώρηση' && (
-                        <>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Ε2 / Ε9</h5>
-                            <label className={`detail-upload-card ${files.e2e9.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('e2e9')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.e2e9} field="e2e9" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Υπεύθυνη δήλωση ιδιοκτήτη</h5>
-                            <label className={`detail-upload-card ${files.ypeuthiniDilosiIdioktiti.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('ypeuthiniDilosiIdioktiti')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.ypeuthiniDilosiIdioktiti} field="ypeuthiniDilosiIdioktiti" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Ταυτότητα ιδιοκτήτη</h5>
-                            <label className={`detail-upload-card ${files.tautotitaIdioktiti.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('tautotitaIdioktiti')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.tautotitaIdioktiti} field="tautotitaIdioktiti" onRemove={removeFile} />
-                          </div>
-
+                      {/* Αέριο + Ενοικιαστής + Αττική → στοιχεία ιδιοκτήτη */}
+                      {isGasEnikiasti && (
+                        <div className="detail-form-subsection">
+                          <h5 className="detail-form-subtitle">Στοιχεία Ιδιοκτήτη</h5>
                           <div className="detail-form-group">
-                            <label>ΑΦΜ ιδιοκτήτη</label>
+                            <label>ΑΦΜ ιδιοκτήτη <span className="detail-required">*</span></label>
                             <input
                               type="text"
                               value={detailForm.afmIdioktiti}
@@ -772,43 +1034,36 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               placeholder="Εισάγετε ΑΦΜ ιδιοκτήτη"
                             />
                           </div>
-                        </>
-                      )}
-
-                      {/* Οφειλές + ίδιος οφειλέτης → απόδειξη πληρωμής */}
-                      {detailForm.yparxounOfeiles && detailForm.idiosOfeiletis && (
-                        <div className="detail-form-subsection">
-                          <h5 className="detail-form-subtitle">Απόδειξη πληρωμής / διακανονισμού</h5>
-                          <label className={`detail-upload-card ${files.apodeixiPliromis.length ? 'has-file' : ''}`}>
-                            <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('apodeixiPliromis')} />
-                            <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                          </label>
-                          <FilePreviewList files={files.apodeixiPliromis} field="apodeixiPliromis" onRemove={removeFile} />
+                          <div className="detail-form-group">
+                            <label>Ονοματεπώνυμο ιδιοκτήτη <span className="detail-required">*</span></label>
+                            <input
+                              type="text"
+                              value={detailForm.onomaIdioktiti}
+                              onChange={e => setDetailForm(prev => ({ ...prev, onomaIdioktiti: e.target.value }))}
+                              placeholder="Εισάγετε ονοματεπώνυμο ιδιοκτήτη"
+                            />
+                          </div>
+                          <div className="detail-form-group">
+                            <label>Κινητό ιδιοκτήτη <span className="detail-required">*</span></label>
+                            <input
+                              type="tel"
+                              value={detailForm.kinitoIdioktiti}
+                              onChange={e => setDetailForm(prev => ({ ...prev, kinitoIdioktiti: e.target.value }))}
+                              placeholder="69xxxxxxxx"
+                            />
+                          </div>
+                          <div className="detail-form-group">
+                            <label>Email ιδιοκτήτη <span className="detail-required">*</span></label>
+                            <input
+                              type="email"
+                              value={detailForm.emailIdioktiti}
+                              onChange={e => setDetailForm(prev => ({ ...prev, emailIdioktiti: e.target.value }))}
+                              placeholder="email@example.com"
+                            />
+                          </div>
                         </div>
                       )}
 
-                      {/* Οφειλές + ΟΧΙ ίδιος οφειλέτης → μισθωτήριο/τίτλος + υπεύθυνη δήλωση */}
-                      {detailForm.yparxounOfeiles && !detailForm.idiosOfeiletis && (
-                        <>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Μισθωτήριο / Τίτλος ιδιοκτησίας</h5>
-                            <label className={`detail-upload-card ${files.misthotirioTitlos.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('misthotirioTitlos')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.misthotirioTitlos} field="misthotirioTitlos" onRemove={removeFile} />
-                          </div>
-
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">Υπεύθυνη δήλωση μη σχέσης με τον οφειλέτη</h5>
-                            <label className={`detail-upload-card ${files.ypeuthiniDilosiMiSxesis.length ? 'has-file' : ''}`}>
-                              <input type="file" accept=".pdf,.png,.jpg,.jpeg" multiple onChange={handleFileChange('ypeuthiniDilosiMiSxesis')} />
-                              <span className="detail-upload-card-label"><UploadIcon />Επιλογή αρχείων</span>
-                            </label>
-                            <FilePreviewList files={files.ypeuthiniDilosiMiSxesis} field="ypeuthiniDilosiMiSxesis" onRemove={removeFile} />
-                          </div>
-                        </>
-                      )}
                     </div>
                   )}
 
