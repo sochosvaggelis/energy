@@ -40,7 +40,18 @@ try {
   })
   const page = await browser.newPage()
 
-  await page.goto('http://localhost:4444/swthrhs/', { waitUntil: 'networkidle0', timeout: 20000 })
+  // Block external requests (Supabase etc.) that cause timeout in CI
+  await page.setRequestInterception(true)
+  page.on('request', (req) => {
+    const url = req.url()
+    if (url.startsWith('http://localhost')) {
+      req.continue()
+    } else {
+      req.abort()
+    }
+  })
+
+  await page.goto('http://localhost:4444/swthrhs/', { waitUntil: 'networkidle0', timeout: 30000 })
 
   // Wait for React components to render
   await page.waitForSelector('.feature-card', { timeout: 10000 }).catch(() => {
@@ -56,6 +67,8 @@ try {
   } else {
     console.log('Pre-rendering skipped: React did not render. Keeping original HTML.')
   }
+} catch (err) {
+  console.log(`Pre-rendering failed: ${err.message}. Keeping original HTML.`)
 } finally {
   server.close()
 }
