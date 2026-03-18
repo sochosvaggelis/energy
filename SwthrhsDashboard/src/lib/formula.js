@@ -1,7 +1,7 @@
 /**
  * Formula shape:
  * {
- *   base_type: "variable" | "number" | "auto",
+ *   base_type: "variable" | "number",
  *   base_value: "wholesale_price" | 0.05,
  *   steps: [
  *     { op: "+"|"-"|"*"|"/", val_type: "number"|"variable", val: 1.2 | "adjustment_factor" }
@@ -12,6 +12,14 @@
 function resolveValue(type, val, variables) {
   if (type === 'variable') return Number(variables[val] ?? 0)
   return Number(val ?? 0)
+}
+
+function formatValue(type, val, variables) {
+  if (type === 'variable') {
+    const resolved = variables[val]
+    return resolved != null ? `${val}(${resolved})` : val
+  }
+  return val != null && val !== '' ? String(val) : '?'
 }
 
 export function evaluateFormula(formula, variables = {}) {
@@ -49,22 +57,17 @@ export function computeAutoPrice(plan, variables, { night = false } = {}) {
   return Math.round((tv + md) * 100000) / 100000
 }
 
-export function resolvePlanPrice(plan, variables) {
-  if (plan.price_formula) {
-    if (plan.price_formula.base_type === 'auto') {
-      return computeAutoPrice(plan, variables)
-    }
-    return evaluateFormula(plan.price_formula, variables)
-  }
-  return plan.price_per_kwh
-}
+export function formulaToDisplayParts(formula, variables = {}) {
+  if (!formula) return { text: '', result: null }
 
-export function resolvePlanNightPrice(plan, variables) {
-  if (plan.night_price_formula) {
-    if (plan.night_price_formula.base_type === 'auto') {
-      return computeAutoPrice(plan, variables, { night: true })
-    }
-    return evaluateFormula(plan.night_price_formula, variables)
+  const parts = [formatValue(formula.base_type, formula.base_value, variables)]
+
+  for (const step of formula.steps || []) {
+    const opSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷' }[step.op] || step.op
+    parts.push(opSymbol)
+    parts.push(formatValue(step.val_type || 'number', step.val, variables))
   }
-  return plan.night_price_per_kwh
+
+  const result = evaluateFormula(formula, variables)
+  return { text: parts.join(' '), result }
 }

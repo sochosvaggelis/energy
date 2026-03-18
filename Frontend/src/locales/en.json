@@ -165,6 +165,9 @@
     "submission": "Submission",
     "attachDocuments": "Attach Documents",
     "allTypesAccepted": "All file types accepted",
+    "fileLimitsHint": "Up to {{maxFiles}} files per field, {{maxSize}}MB each",
+    "fileTooLarge": "File exceeds the {{max}}MB limit",
+    "tooManyFiles": "Up to {{max}} files per field",
     "service": "Service:",
     "packageName": "Package name:",
     "providerName": "Provider name:",
@@ -224,7 +227,8 @@
     "fillRequired": "Fill in all required fields (*)",
     "uploadRequired": "Upload all required files (*)",
     "selectBusinessType": "Select business type in the previous step.",
-    "noExtraDocs": "No additional documents required. Proceed to submission so a representative can contact you."
+    "noExtraDocs": "No additional documents required. Proceed to submission so a representative can contact you.",
+    "uploadPartialWarning": "{{count}} file(s) failed to upload. A representative may ask you to resend them."
   },
   "theme": {
     "lightMode": "Switch to light mode",

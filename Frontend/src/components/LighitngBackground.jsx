@@ -17,7 +17,6 @@ const Lightning = ({ hue = 230, lightModeHue = 230, xOffset = 0, speed = 1, inte
 
         const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
         if (!gl) {
-            console.error('WebGL not supported');
             return;
         }
         gl.enable(gl.BLEND);
@@ -124,7 +123,6 @@ const Lightning = ({ hue = 230, lightModeHue = 230, xOffset = 0, speed = 1, inte
             gl.shaderSource(shader, source);
             gl.compileShader(shader);
             if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-                console.error('Shader compile error:', gl.getShaderInfoLog(shader));
                 gl.deleteShader(shader);
                 return null;
             }
@@ -141,7 +139,6 @@ const Lightning = ({ hue = 230, lightModeHue = 230, xOffset = 0, speed = 1, inte
         gl.attachShader(program, fragmentShader);
         gl.linkProgram(program);
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            console.error('Program linking error:', gl.getProgramInfoLog(program));
             return;
         }
         gl.useProgram(program);

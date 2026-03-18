@@ -1,0 +1,129 @@
+.error-boundary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg-body, #0a1628);
+}
+
+.error-boundary-content {
+  text-align: center;
+  max-width: 420px;
+}
+
+.error-boundary-icon {
+  color: var(--accent, #f59e0b);
+  margin-bottom: 1.5rem;
+}
+
+.error-boundary-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  margin: 0 0 0.75rem;
+}
+
+.error-boundary-message {
+  font-size: 0.95rem;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+}
+
+.error-boundary-reload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent-text, #0a1628);
+  background: var(--accent, #f59e0b);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.error-boundary-reload-btn:hover {
+  background: var(--accent-light, #fbbf24);
+  transform: translateY(-1px);
+}
+
+/* Error banner at top of page */
+.error-banner {
+  position: fixed;
+  top: var(--nav-height, 60px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(239, 68, 68, 0.15);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+  font-size: 0.9rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: errorBannerSlide 0.3s ease-out;
+}
+
+@keyframes errorBannerSlide {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.error-banner svg {
+  flex-shrink: 0;
+}
+
+.error-banner-dismiss {
+  background: none;
+  border: none;
+  color: #fca5a5;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.error-banner-dismiss:hover {
+  opacity: 1;
+}
+
+body.light-mode .error-banner {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border-bottom-color: rgba(239, 68, 68, 0.2);
+}
+
+body.light-mode .error-banner-dismiss {
+  color: #dc2626;
+}
+
+/* Upload warning in PlanDetailSidebar */
+.upload-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  margin-top: 0.75rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+  color: var(--accent-light, #fbbf24);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.upload-warning svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}

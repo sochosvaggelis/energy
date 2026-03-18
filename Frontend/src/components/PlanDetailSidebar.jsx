@@ -22,25 +22,41 @@ function isImageFile(file) {
   return ['png', 'jpg', 'jpeg'].includes(ext)
 }
 
-function FilePreviewItem({ file, onRemove }) {
+function isPdfFile(file) {
+  if (file.type === 'application/pdf') return true
+  return file.name.split('.').pop().toLowerCase() === 'pdf'
+}
+
+const PdfIcon = () => (
+  <svg className="file-preview-thumb file-preview-pdf-icon" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <text x="12" y="17" textAnchor="middle" fill="currentColor" stroke="none" fontSize="6" fontWeight="bold">PDF</text>
+  </svg>
+)
+
+function FilePreviewItem({ file, onRemove, onPreview }) {
   const { t } = useTranslation()
   const [url, setUrl] = useState(null)
+  const isImage = isImageFile(file)
+  const isPdf = isPdfFile(file)
 
   useEffect(() => {
-    if (!file || !isImageFile(file)) {
+    if (!file || !isImage) {
       setUrl(null)
       return
     }
     const objectUrl = URL.createObjectURL(file)
     setUrl(objectUrl)
     return () => URL.revokeObjectURL(objectUrl)
-  }, [file])
+  }, [file, isImage])
 
   return (
-    <div className="file-preview">
+    <div className="file-preview" onClick={onPreview} role="button" tabIndex={0} onKeyDown={e => e.key === 'Enter' && onPreview()}>
       {url && <img src={url} alt={file.name} className="file-preview-thumb" />}
+      {isPdf && <PdfIcon />}
       <span className="file-preview-name">{file.name}</span>
-      <button type="button" className="file-preview-remove" onClick={onRemove} aria-label={t('common.remove')}>
+      <button type="button" className="file-preview-remove" onClick={e => { e.stopPropagation(); onRemove() }} aria-label={t('common.remove')}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
         </svg>
@@ -49,12 +65,51 @@ function FilePreviewItem({ file, onRemove }) {
   )
 }
 
-function FilePreviewList({ files, field, onRemove }) {
+function FilePreviewModal({ file, onClose }) {
+  const [url, setUrl] = useState(null)
+  const isImage = file && isImageFile(file)
+  const isPdf = file && isPdfFile(file)
+
+  useEffect(() => {
+    if (!file) return
+    const handleKey = (e) => e.key === 'Escape' && onClose()
+    document.addEventListener('keydown', handleKey)
+    return () => document.removeEventListener('keydown', handleKey)
+  }, [file, onClose])
+
+  useEffect(() => {
+    if (!file) return
+    const objectUrl = URL.createObjectURL(file)
+    setUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [file])
+
+  if (!file || !url) return null
+
+  return (
+    <div className="file-preview-modal-overlay" onClick={onClose}>
+      <div className="file-preview-modal" onClick={e => e.stopPropagation()}>
+        <button type="button" className="file-preview-modal-close" onClick={onClose}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+        <div className="file-preview-modal-filename">{file.name}</div>
+        <div className="file-preview-modal-content">
+          {isImage && <img src={url} alt={file.name} className="file-preview-modal-image" />}
+          {isPdf && <iframe src={url} title={file.name} className="file-preview-modal-pdf" />}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FilePreviewList({ files, field, onRemove, onPreview }) {
   if (!files.length) return null
   return (
     <div className="file-preview-list">
       {files.map((file, i) => (
-        <FilePreviewItem key={`${file.name}-${i}`} file={file} onRemove={() => onRemove(field, i)} />
+        <FilePreviewItem key={`${file.name}-${i}`} file={file} onRemove={() => onRemove(field, i)} onPreview={() => onPreview(file)} />
       ))}
     </div>
   )
@@ -150,15 +205,6 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
     metritisAeriou: [],
   })
 
-  const afmValid = /^\d{9}$/.test(detailForm.afm.trim())
-  const isStep1Valid =
-    afmValid &&
-    detailForm.doy.trim() !== '' &&
-    files.tautotita.length > 0 &&
-    files.logariasmos.length > 0 &&
-    (!isProfessional || detailForm.tiposEpixeirisis !== '') &&
-    (!(detailForm.allagiOnomatos && (!isProviderChange || isGas)) || detailForm.idiotita !== '')
-
   const currentProviderName = useMemo(() => {
     if (!formData?.provider || formData.provider === 'unknown' || !providersData?.length) return null
     return providersData.find(p => p.id === formData.provider)?.name || null
@@ -171,6 +217,15 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
     currentProviderName.toUpperCase() !== selectedPlan.provider.toUpperCase()
 
   const isGas = selectedPlan?.service_type === 'gas'
+
+  const afmValid = /^\d{9}$/.test(detailForm.afm.trim())
+  const isStep1Valid =
+    afmValid &&
+    detailForm.doy.trim() !== '' &&
+    files.tautotita.length > 0 &&
+    files.logariasmos.length > 0 &&
+    (!isProfessional || detailForm.tiposEpixeirisis !== '') &&
+    (!(detailForm.allagiOnomatos && (!isProviderChange || isGas)) || detailForm.idiotita !== '')
 
   const isZenithPagia = detailForm.pagiaEntoli && selectedPlan?.provider?.toUpperCase() === 'ΖΕΝΙΘ'
 
@@ -189,26 +244,79 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
   const hasStep2Content = isProviderChange || detailForm.protiSyndesi || isZenithPagia || isIdioktitisE9 || isParaxorisi || isGasMetritis
 
   const isStep2Valid = (() => {
+    // --- Zenith standing-order fields ---
     if (isZenithPagia) {
       const ibanClean = detailForm.iban.replace(/\s/g, '')
       if (!/^GR\d{25}$/.test(ibanClean)) return false
       if (!detailForm.onomaDikaiouhou.trim()) return false
       if (!detailForm.onomaTrapezas.trim()) return false
+      if (detailForm.ibanTritosProsopo && files.ypeuthiniDilosiIban.length === 0) return false
     }
+
+    // --- Gas tenant owner details ---
     if (isGasEnikiasti) {
       if (!/^\d{9}$/.test(detailForm.afmIdioktiti.trim())) return false
       if (!detailForm.onomaIdioktiti.trim()) return false
-      if (!/^[0-9]{10}$/.test(detailForm.kinitoIdioktiti.trim())) return false
+      if (!/^69\d{8}$/.test(detailForm.kinitoIdioktiti.trim())) return false
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(detailForm.emailIdioktiti.trim())) return false
     }
+
+    // --- Required uploads based on visible step-2 sections ---
+    if (isProviderChange && detailForm.ofeilesPalioParoxou) {
+      if (files.diakanonismos.length === 0) return false
+      if (files.pliromiTeleftaiasDosis.length === 0) return false
+    }
+    if (detailForm.protiSyndesi && files.symvasiDeddie.length === 0) return false
+    if (isIdioktitisE9 && files.e9.length === 0) return false
+    if (isParaxorisi && files.ypeuthiniDilosiParaxorisis.length === 0) return false
+    if (isGasMetritis && files.metritisAeriou.length === 0) return false
+
+    // --- Professional business-type uploads ---
+    if (isProfessional) {
+      if (detailForm.tiposEpixeirisis === 'Ατομική' && files.enarxiDrastiriotitas.length === 0) return false
+      if (detailForm.tiposEpixeirisis === 'Εταιρία') {
+        if (files.katastatiko.length === 0) return false
+        if (files.tautotitaNomimouEkprosopou.length === 0) return false
+      }
+    }
+
     return true
   })()
+
+  const MAX_FILES_PER_FIELD = 5
+  const MAX_FILE_SIZE_MB = 10
+  const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+  const [fileError, setFileError] = useState(null)
 
   const handleFileChange = (field) => (e) => {
     const newFiles = Array.from(e.target.files || [])
     if (newFiles.length === 0) return
-    setFiles(prev => ({ ...prev, [field]: [...prev[field], ...newFiles] }))
+    setFileError(null)
+
+    const oversized = newFiles.find(f => f.size > MAX_FILE_SIZE_BYTES)
+    if (oversized) {
+      setFileError(t('detail.fileTooLarge', { max: MAX_FILE_SIZE_MB }))
+      e.target.value = ''
+      return
+    }
+
+    setFiles(prev => {
+      const current = prev[field]
+      const remaining = MAX_FILES_PER_FIELD - current.length
+      if (remaining <= 0) {
+        setFileError(t('detail.tooManyFiles', { max: MAX_FILES_PER_FIELD }))
+        return prev
+      }
+      const toAdd = newFiles.slice(0, remaining)
+      if (toAdd.length < newFiles.length) {
+        setFileError(t('detail.tooManyFiles', { max: MAX_FILES_PER_FIELD }))
+      }
+      return { ...prev, [field]: [...current, ...toAdd] }
+    })
     e.target.value = ''
   }
+
+  const [previewFile, setPreviewFile] = useState(null)
 
   const removeFile = (field, index) => {
     setFiles(prev => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }))
@@ -230,38 +338,45 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
 
   const [submitting, setSubmitting] = useState(false)
   const [submitResult, setSubmitResult] = useState(null)
+  const [uploadWarning, setUploadWarning] = useState(null)
 
   const uploadFiles = useCallback(async (fieldFiles, folder) => {
     const results = await Promise.all(fieldFiles.map(async (file) => {
       const ext = file.name.split('.').pop()
       const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
       const { error } = await supabase.storage.from('uploads').upload(path, file)
-      if (error) return null
+      if (error) {
+        console.error(`Upload failed for ${file.name}:`, error)
+        return { url: null, failed: true, name: file.name }
+      }
       const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(path)
-      return urlData.publicUrl
+      return { url: urlData.publicUrl, failed: false, name: file.name }
     }))
-    return results.filter(Boolean)
+    const failedFiles = results.filter(r => r.failed).map(r => r.name)
+    const urls = results.filter(r => !r.failed).map(r => r.url)
+    return { urls, failedFiles }
   }, [])
 
   const handleSubmit = useCallback(async () => {
     setSubmitting(true)
     setSubmitResult(null)
+    setUploadWarning(null)
     try {
       const folder = submissionId || `${Date.now()}_${Math.random().toString(36).slice(2)}`
 
       const [
-        logariasmosUrls,
-        tautotitaUrls,
-        metritisUrls,
-        diakanonismosUrls, pliromiTeleftaiasDosisUrls,
-        symvasiDeddieUrls,
-        ypeuthiniDilosiIbanUrls,
-        e9Urls,
-        ypeuthiniDilosiParaxorisisUrls,
-        enarxiDrastiriotirasUrls,
-        katastatikoUrls,
-        tautotitaNomimouEkprosopouUrls,
-        metritisAeriouUrls
+        logariasmosResult,
+        tautotitaResult,
+        metritisResult,
+        diakanonismosResult, pliromiTeleftaiasDosisResult,
+        symvasiDeddieResult,
+        ypeuthiniDilosiIbanResult,
+        e9Result,
+        ypeuthiniDilosiParaxorisisResult,
+        enarxiDrastiriotirasResult,
+        katastatikoResult,
+        tautotitaNomimouEkprosopouResult,
+        metritisAeriouResult
       ] = await Promise.all([
         uploadFiles(files.logariasmos, `${folder}/logariasmos`),
         uploadFiles(files.tautotita, `${folder}/tautotita`),
@@ -277,6 +392,35 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
         uploadFiles(files.tautotitaNomimouEkprosopou, `${folder}/tautotita_nomimou_ekprosopou`),
         uploadFiles(files.metritisAeriou, `${folder}/metritis_aeriou`),
       ])
+
+      // Collect all failed file names
+      const allResults = [
+        logariasmosResult, tautotitaResult, metritisResult,
+        diakanonismosResult, pliromiTeleftaiasDosisResult,
+        symvasiDeddieResult, ypeuthiniDilosiIbanResult,
+        e9Result, ypeuthiniDilosiParaxorisisResult,
+        enarxiDrastiriotirasResult, katastatikoResult,
+        tautotitaNomimouEkprosopouResult, metritisAeriouResult
+      ]
+      const allFailedFiles = allResults.flatMap(r => r.failedFiles)
+      if (allFailedFiles.length > 0) {
+        setUploadWarning(t('detail.uploadPartialWarning', { count: allFailedFiles.length }))
+      }
+
+      // Extract URL arrays
+      const logariasmosUrls = logariasmosResult.urls
+      const tautotitaUrls = tautotitaResult.urls
+      const metritisUrls = metritisResult.urls
+      const diakanonismosUrls = diakanonismosResult.urls
+      const pliromiTeleftaiasDosisUrls = pliromiTeleftaiasDosisResult.urls
+      const symvasiDeddieUrls = symvasiDeddieResult.urls
+      const ypeuthiniDilosiIbanUrls = ypeuthiniDilosiIbanResult.urls
+      const e9Urls = e9Result.urls
+      const ypeuthiniDilosiParaxorisisUrls = ypeuthiniDilosiParaxorisisResult.urls
+      const enarxiDrastiriotirasUrls = enarxiDrastiriotirasResult.urls
+      const katastatikoUrls = katastatikoResult.urls
+      const tautotitaNomimouEkprosopouUrls = tautotitaNomimouEkprosopouResult.urls
+      const metritisAeriouUrls = metritisAeriouResult.urls
 
       const updateData = {
         selected_plan: selectedPlan ? {
@@ -328,7 +472,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
       // Ensure submission exists (upsert via RPC)
       let targetId = submissionId
       if (!targetId) {
-        const { id, error: upsertErr } = await upsertSubmission(formData)
+        const { id, error: upsertErr } = await upsertSubmission(formData, providersData)
         if (upsertErr) throw upsertErr
         targetId = id
       }
@@ -349,7 +493,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
     } finally {
       setSubmitting(false)
     }
-  }, [files, formData, selectedPlan, detailForm, submissionId, uploadFiles])
+  }, [files, formData, selectedPlan, detailForm, submissionId, uploadFiles, t])
 
   const handleClose = () => {
     onClose()
@@ -397,8 +541,14 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                     )}
                   </div>
                   <h4 className="detail-section-title">{t(titleKey)}</h4>
-                  {step === 1 && <span className="detail-accepted-formats">{t('detail.allTypesAccepted')}</span>}
+                  {step === 1 && <span className="detail-accepted-formats">{t('detail.fileLimitsHint', { maxFiles: MAX_FILES_PER_FIELD, maxSize: MAX_FILE_SIZE_MB })}</span>}
                 </div>
+
+                {step === 1 && fileError && (
+                  <div className="detail-file-error" onClick={() => setFileError(null)}>
+                    {fileError}
+                  </div>
+                )}
 
                 <div className="detail-section-body">
                   {step === 0 && selectedPlan && (
@@ -439,7 +589,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <img src={idFront} alt={t('detail.idPassport')} className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.frontAndBack')}</span>
                           </label>
-                          <FilePreviewList files={files.tautotita} field="tautotita" onRemove={removeFile} />
+                          <FilePreviewList files={files.tautotita} field="tautotita" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
 
                         <div className="detail-form-group">
@@ -474,7 +624,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
                           </label>
-                          <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} />
+                          <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       </div>
 
@@ -589,7 +739,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <img src={idFront} alt={t('detail.idPassport')} className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.frontAndBack')}</span>
                           </label>
-                          <FilePreviewList files={files.tautotita} field="tautotita" onRemove={removeFile} />
+                          <FilePreviewList files={files.tautotita} field="tautotita" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
 
                         <div className="detail-form-group">
@@ -624,7 +774,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
                           </label>
-                          <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} />
+                          <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
 
                         <div className="detail-form-group">
@@ -634,7 +784,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <img src={powerMeter} alt={t('detail.meterPhoto')} className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label"><UploadIcon />{t('detail.meterAndReadings')}</span>
                           </label>
-                          <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} />
+                          <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       </div>
 
@@ -730,7 +880,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
                               <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
                             </label>
-                            <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} />
+                            <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                           <div className="detail-form-subsection">
                             <h5 className="detail-form-subtitle">{t('detail.meterPhoto')}</h5>
@@ -739,7 +889,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <img src={powerMeter} alt={t('detail.meterPhoto')} className="detail-upload-card-icon" />
                               <span className="detail-upload-card-label"><UploadIcon />{t('detail.meterAndReadings')}</span>
                             </label>
-                            <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} />
+                            <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                         </>
                       )}
@@ -751,7 +901,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('diakanonismos')} />
                               <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                             </label>
-                            <FilePreviewList files={files.diakanonismos} field="diakanonismos" onRemove={removeFile} />
+                            <FilePreviewList files={files.diakanonismos} field="diakanonismos" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                           <div className="detail-form-subsection">
                             <h5 className="detail-form-subtitle">{t('detail.lastInstallment')}</h5>
@@ -759,7 +909,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('pliromiTeleftaiasDosis')} />
                               <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                             </label>
-                            <FilePreviewList files={files.pliromiTeleftaiasDosis} field="pliromiTeleftaiasDosis" onRemove={removeFile} />
+                            <FilePreviewList files={files.pliromiTeleftaiasDosis} field="pliromiTeleftaiasDosis" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                         </>
                       )}
@@ -770,7 +920,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('enarxiDrastiriotitas')} />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                           </label>
-                          <FilePreviewList files={files.enarxiDrastiriotitas} field="enarxiDrastiriotitas" onRemove={removeFile} />
+                          <FilePreviewList files={files.enarxiDrastiriotitas} field="enarxiDrastiriotitas" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       )}
                       {detailForm.tiposEpixeirisis === 'Εταιρία' && (
@@ -781,7 +931,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('katastatiko')} />
                               <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                             </label>
-                            <FilePreviewList files={files.katastatiko} field="katastatiko" onRemove={removeFile} />
+                            <FilePreviewList files={files.katastatiko} field="katastatiko" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                           <div className="detail-form-subsection">
                             <h5 className="detail-form-subtitle">{t('detail.legalRepId')}</h5>
@@ -789,7 +939,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotitaNomimouEkprosopou')} />
                               <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                             </label>
-                            <FilePreviewList files={files.tautotitaNomimouEkprosopou} field="tautotitaNomimouEkprosopou" onRemove={removeFile} />
+                            <FilePreviewList files={files.tautotitaNomimouEkprosopou} field="tautotitaNomimouEkprosopou" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                         </>
                       )}
@@ -800,7 +950,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('symvasiDeddie')} />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                           </label>
-                          <FilePreviewList files={files.symvasiDeddie} field="symvasiDeddie" onRemove={removeFile} />
+                          <FilePreviewList files={files.symvasiDeddie} field="symvasiDeddie" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       )}
                       {isZenithPagia && (
@@ -841,7 +991,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                                 <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('ypeuthiniDilosiIban')} />
                                 <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                               </label>
-                              <FilePreviewList files={files.ypeuthiniDilosiIban} field="ypeuthiniDilosiIban" onRemove={removeFile} />
+                              <FilePreviewList files={files.ypeuthiniDilosiIban} field="ypeuthiniDilosiIban" onRemove={removeFile} onPreview={setPreviewFile} />
                             </div>
                           )}
                         </div>
@@ -853,7 +1003,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('e9')} />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                           </label>
-                          <FilePreviewList files={files.e9} field="e9" onRemove={removeFile} />
+                          <FilePreviewList files={files.e9} field="e9" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       )}
                       {isParaxorisi && (
@@ -863,7 +1013,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('ypeuthiniDilosiParaxorisis')} />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                           </label>
-                          <FilePreviewList files={files.ypeuthiniDilosiParaxorisis} field="ypeuthiniDilosiParaxorisis" onRemove={removeFile} />
+                          <FilePreviewList files={files.ypeuthiniDilosiParaxorisis} field="ypeuthiniDilosiParaxorisis" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       )}
                       {!detailForm.tiposEpixeirisis && (
@@ -891,7 +1041,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
                               <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
                             </label>
-                            <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} />
+                            <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                           <div className="detail-form-subsection">
                             <h5 className="detail-form-subtitle">{t('detail.meterPhoto')}</h5>
@@ -900,7 +1050,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <img src={powerMeter} alt={t('detail.meterPhoto')} className="detail-upload-card-icon" />
                               <span className="detail-upload-card-label"><UploadIcon />{t('detail.meterAndReadings')}</span>
                             </label>
-                            <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} />
+                            <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                         </>
                       )}
@@ -913,7 +1063,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('diakanonismos')} />
                               <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                             </label>
-                            <FilePreviewList files={files.diakanonismos} field="diakanonismos" onRemove={removeFile} />
+                            <FilePreviewList files={files.diakanonismos} field="diakanonismos" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                           <div className="detail-form-subsection">
                             <h5 className="detail-form-subtitle">{t('detail.lastInstallment')}</h5>
@@ -921,7 +1071,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                               <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('pliromiTeleftaiasDosis')} />
                               <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                             </label>
-                            <FilePreviewList files={files.pliromiTeleftaiasDosis} field="pliromiTeleftaiasDosis" onRemove={removeFile} />
+                            <FilePreviewList files={files.pliromiTeleftaiasDosis} field="pliromiTeleftaiasDosis" onRemove={removeFile} onPreview={setPreviewFile} />
                           </div>
                         </>
                       )}
@@ -964,7 +1114,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                                 <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('ypeuthiniDilosiIban')} />
                                 <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                               </label>
-                              <FilePreviewList files={files.ypeuthiniDilosiIban} field="ypeuthiniDilosiIban" onRemove={removeFile} />
+                              <FilePreviewList files={files.ypeuthiniDilosiIban} field="ypeuthiniDilosiIban" onRemove={removeFile} onPreview={setPreviewFile} />
                             </div>
                           )}
                         </div>
@@ -977,7 +1127,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('symvasiDeddie')} />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                           </label>
-                          <FilePreviewList files={files.symvasiDeddie} field="symvasiDeddie" onRemove={removeFile} />
+                          <FilePreviewList files={files.symvasiDeddie} field="symvasiDeddie" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       )}
 
@@ -988,7 +1138,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('e9')} />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                           </label>
-                          <FilePreviewList files={files.e9} field="e9" onRemove={removeFile} />
+                          <FilePreviewList files={files.e9} field="e9" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       )}
 
@@ -999,7 +1149,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('ypeuthiniDilosiParaxorisis')} />
                             <span className="detail-upload-card-label"><UploadIcon />{t('common.selectFiles')}</span>
                           </label>
-                          <FilePreviewList files={files.ypeuthiniDilosiParaxorisis} field="ypeuthiniDilosiParaxorisis" onRemove={removeFile} />
+                          <FilePreviewList files={files.ypeuthiniDilosiParaxorisis} field="ypeuthiniDilosiParaxorisis" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       )}
 
@@ -1011,7 +1161,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <img src={powerMeter} alt={t('detail.gasMeterPhoto')} className="detail-upload-card-icon" />
                             <span className="detail-upload-card-label"><UploadIcon />{t('detail.gasMeterPhoto')}</span>
                           </label>
-                          <FilePreviewList files={files.metritisAeriou} field="metritisAeriou" onRemove={removeFile} />
+                          <FilePreviewList files={files.metritisAeriou} field="metritisAeriou" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       )}
 
@@ -1040,8 +1190,10 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <label>{t('detail.ownerMobile')} <span className="detail-required">*</span></label>
                             <input
                               type="tel"
+                              inputMode="numeric"
+                              maxLength={10}
                               value={detailForm.kinitoIdioktiti}
-                              onChange={e => setDetailForm(prev => ({ ...prev, kinitoIdioktiti: e.target.value }))}
+                              onChange={e => setDetailForm(prev => ({ ...prev, kinitoIdioktiti: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
                               placeholder="69xxxxxxxx"
                             />
                           </div>
@@ -1069,6 +1221,16 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             <polyline points="22 4 12 14.01 9 11.01" />
                           </svg>
                           <p>{t('detail.successMessage')}</p>
+                          {uploadWarning && (
+                            <div className="upload-warning">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                              </svg>
+                              <span>{uploadWarning}</span>
+                            </div>
+                          )}
                         </div>
                       ) : submitResult === 'error' ? (
                         <div className="detail-submit-error">
@@ -1128,6 +1290,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
         </div>
         </div>
       </aside>
+      <FilePreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />
     </>
   )
 }

@@ -31,8 +31,14 @@ export function LanguageProvider({ children }) {
     document.documentElement.lang = locale
   }, [locale])
 
-  const t = useCallback((key) => {
-    return translations[locale]?.[key] ?? key
+  const t = useCallback((key, params) => {
+    let str = translations[locale]?.[key] ?? key
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        str = str.replaceAll(`{{${k}}}`, v)
+      })
+    }
+    return str
   }, [locale])
 
   return (

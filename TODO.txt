@@ -1,0 +1,88 @@
+===============================================================
+EnergyCompare — TODO List (18/03/2026)
+===============================================================
+
+[✅] ΟΛΟΚΛΗΡΩΜΕΝΑ
+───────────────────────────────────────────────────────────────
+1. RLS Policies — SQL τρέχτηκε στη βάση, frontend αλλαγμένο
+   σε RPCs (upsert_submission, update_submission_details)
+
+2. TEA null bug — Submission αποθηκεύει πλέον resolved_price
+   αντί null για κυμαινόμενα τιμολόγια
+
+3. Cache cleanup στο logout — cacheClearAll() καθαρίζει
+   όλα τα admin_* keys από localStorage στο signOut
+
+4. Form Validation (PlanDetailSidebar.jsx)
+   - isStep2Valid ελέγχει required uploads ανά context
+   - ΑΦΜ: 9 ψηφία, IBAN: GR+25 digits, Τηλέφωνο: 69xxxxxxxx
+   - Email: regex validation
+
+5. Error handling στο Frontend
+   - ErrorBoundary component, error banner στο App.jsx
+   - File uploads: warning message αν κάποια αποτύχουν
+
+6. File upload limits — Max 10MB/file, 5 files/field
+   Preview modal (click σε εικόνα/PDF), PDF icon
+
+7. Νυχτερινή τιμή σε auto TEA mode
+   computeAutoPrice υποστηρίζει night_tv/ll/lu/alpha
+
+8. Dead links στο Footer → terms, privacy, mailto
+
+9. Console.log σε production — αφαιρέθηκαν
+
+10. Providers/Plans/PlansByCategory tabs
+    Φιλτράρουν providers βάσει service_type
+
+11. Accessibility — Provider logos: role="button" + keyboard
+
+12. Typo LighitngBackground.jsx — ήδη μετονομασμένο
+
+13. Number validation — safeNumber helper στο Dashboard
+
+14. Server-confirmed updates αντί optimistic (CustomersTab)
+
+15. Staff self-deletion prevented (AppSettingsTab)
+
+16. Plan duplicate check (PlansTab)
+
+17. Tier validation (PlansByCategoryTab)
+    min_kwh < max_kwh, no overlaps, no negative prices
+
+18. isProfessional temporal dead zone fix
+
+19. Upsert submission βάσει τηλεφώνου μόνο
+    Provider UUID → name πριν αποθηκευτεί
+
+20. Admin Dashboard realtime + auto-refresh κάθε 1 ώρα
+
+21. Uploaded files labels — ενημερώθηκαν στο Dashboard
+
+22. Status Settings tab (νέο) — CRUD statuses, δυναμικό
+
+23. i18n interpolation support — t() με {{var}}
+
+24. FormulaBuilder component — αφαιρέθηκε (αχρησιμοποίητο)
+
+25. Pagination στο CustomersTab — 25 rows/page
+
+26. Hardcoded values — won't fix (domain constants, ήδη i18n)
+
+27. SEO — JSON-LD structured data (Organization, WebSite, FAQ)
+    Meta tags (description, og:tags)
+
+28. Audit logging στο Dashboard
+    audit_log table + logAction helper
+    Logs: status changes, staff CRUD
+
+29. Bundle size — code splitting με React.lazy + Suspense
+    Main chunk: 1021kB → 71.9kB
+    Vendor chunks: react, supabase, three.js, fontawesome
+
+30. CDN dependency — system font fallbacks
+    -apple-system, BlinkMacSystemFont, Segoe UI, Roboto
+
+===============================================================
+
+Δεν υπάρχουν εκκρεμότητες. Όλα τα items ολοκληρώθηκαν.

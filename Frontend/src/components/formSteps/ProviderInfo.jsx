@@ -29,8 +29,11 @@ export default function ProviderInfo({ formData, setFormData, throwError, setThr
                         key={provider.id}
                         src={provider.logo_url}
                         alt={provider.name}
+                        role="button"
+                        tabIndex={0}
                         className={formData.provider === provider.id ? 'selected' : ''}
                         onClick={() => handleSelect(provider.id)}
+                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleSelect(provider.id))}
                     />
                 ) : (
                     <button

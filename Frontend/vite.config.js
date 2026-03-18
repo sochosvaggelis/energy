@@ -9,5 +9,25 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3001'
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/react-dom') || id.includes('node_modules/react/')) {
+            return 'vendor-react'
+          }
+          if (id.includes('node_modules/@supabase')) {
+            return 'vendor-supabase'
+          }
+          if (id.includes('node_modules/three')) {
+            return 'vendor-three'
+          }
+          if (id.includes('node_modules/@fortawesome')) {
+            return 'vendor-fontawesome'
+          }
+        }
+      }
+    }
   }
 })
