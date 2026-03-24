@@ -1,5 +1,5 @@
 import { useTranslation } from '../context/LanguageContext'
-import LanguageSwitcher from './LanguageSwitcher'
+
 import './styles/Nav.css'
 
 function Nav({ onCtaClick, sidebarOpen, onSidebarToggle }) {
@@ -13,7 +13,6 @@ function Nav({ onCtaClick, sidebarOpen, onSidebarToggle }) {
           EnergyCompare
         </a>
         <div className="nav-actions">
-          <LanguageSwitcher />
           <button className="nav-cta" onClick={onCtaClick}>
             {t('nav.requestOffer')}
           </button>

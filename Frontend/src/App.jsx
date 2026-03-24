@@ -53,7 +53,7 @@ function App() {
     async function loadPrices() {
       try {
         const [plansRes, settingsRes, providersRes] = await Promise.all([
-          supabase.from('plans').select('*, providers(name, adjustment_factor, logo_url)'),
+          supabase.from('plans').select('*, providers(name, adjustment_factor, logo_url, info_text)'),
           supabase.from('settings').select('key, value'),
           supabase.from('providers').select('id, name, logo_url').order('name')
         ])
@@ -78,9 +78,11 @@ function App() {
         setSettingsVars(vars)
 
         const flat = plansRes.data.map(plan => ({
+          id: plan.id,
           provider: plan.providers.name,
           adjustment_factor: plan.providers.adjustment_factor,
           provider_logo: plan.providers.logo_url,
+          provider_info: plan.providers.info_text || '',
           service_type: plan.service_type,
           plan: plan.plan_name,
           tariff_type: plan.tariff_type,
@@ -229,6 +231,7 @@ function App() {
           formSubmitted={formSubmitted}
           onGoToForm={scrollToForm}
           onPlanSelect={handlePlanSelect}
+          selectedPlan={selectedPlan}
           providersData={providersData}
         />
         <PlanDetailSidebar

@@ -100,7 +100,11 @@
     "step": "Βήμα",
     "currentProvider": "Τωρινός πάροχος",
     "callMe": "Θέλω να με καλέσετε",
-    "secureInfo": "Τα στοιχεία σου είναι ασφαλή"
+    "secureInfo": "Τα στοιχεία σου είναι ασφαλή",
+    "stepsTitle": "Απομένουν λίγα βήματα για το πακέτο που επιθυμείς",
+    "stepsStep1": "Συμπληρώνεις τη φόρμα",
+    "stepsStep2": "Σε καλεί ένας συνεργάτης μας",
+    "stepsStep3": "Κλείνουμε το πακέτο που σου ταιριάζει"
   },
   "basicInfo": {
     "serviceType": "Τύπος παροχής",
@@ -156,7 +160,12 @@
     "nightCharge": "Νυχτερινή χρέωση",
     "fixedFeeLabel": "Πάγιο",
     "perMonthUnit": "€/μήνα",
-    "providerInfoPlaceholder": "Πληροφορίες προμηθευτή..."
+    "providerInfoPlaceholder": "Πληροφορίες προμηθευτή...",
+    "variableParams": "Παράμετροι κυμαινόμενου τιμολογίου",
+    "basePrice": "Βασική τιμή προμηθευτή",
+    "lowerLimit": "Κάτω όριο ΤΑΕ",
+    "upperLimit": "Άνω όριο ΤΑΕ",
+    "adjustmentFactor": "Συντελεστής αναπροσαρμογής"
   },
   "detail": {
     "programDetails": "Στοιχεία Προγράμματος",

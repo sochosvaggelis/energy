@@ -36,7 +36,7 @@ const TARIFF_COLOR_MAP = Object.fromEntries(
   TARIFF_FILTERS.map(f => [f.key, { labelKey: f.labelKey, color: f.color }])
 )
 
-export default function PriceSidebar({ formData, setFormData, pricesData, settingsVars = {}, isOpen, onToggle, formSubmitted, onGoToForm, onPlanSelect, providersData }) {
+export default function PriceSidebar({ formData, setFormData, pricesData, settingsVars = {}, isOpen, onToggle, formSubmitted, onGoToForm, onPlanSelect, selectedPlan, providersData }) {
   const { t } = useTranslation()
   const [localKwh, setLocalKwh] = useState(null)
   const [localNightKwh, setLocalNightKwh] = useState(null)
@@ -68,7 +68,7 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
     return providersData.find(p => p.id === formData.provider)?.name || null
   }, [formData.provider, providersData])
 
-  const [activeFilters, setActiveFilters] = useState(new Set())
+  const [activeFilters, setActiveFilters] = useState(new Set(TARIFF_FILTERS.map(f => f.key)))
   const [expandedCard, setExpandedCard] = useState(null)
   const [activeTab, setActiveTab] = useState('charges')
 
@@ -190,7 +190,7 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                     <div className="slider-labels">
                       <span>0</span>
                       <span>500</span>
-                      <span>5000 kWh</span>
+                      <span>5000</span>
                     </div>
                   </div>
                 </div>
@@ -226,7 +226,7 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                     <div className="slider-labels">
                       <span>0</span>
                       <span>500</span>
-                      <span>5000 kWh</span>
+                      <span>5000</span>
                     </div>
                   </div>
                 </div>
@@ -275,10 +275,11 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                 const tariff = TARIFF_COLOR_MAP[plan.tariff_type]
                 const cardKey = `${plan.provider}-${plan.plan}-${index}`
                 const isExpanded = expandedCard === cardKey
+                const isSelected = selectedPlan && selectedPlan.plan === plan.plan && selectedPlan.provider === plan.provider
                 return (
                   <div
                     key={cardKey}
-                    className={`plan-card ${index < 3 ? 'top-plan' : ''} ${isExpanded ? 'expanded' : ''}`}
+                    className={`plan-card ${index < 3 ? 'top-plan' : ''} ${isExpanded ? 'expanded' : ''} ${isSelected ? 'selected' : ''}`}
                   >
                     <div className="plan-card-inner">
                       <div className="plan-card-content">
@@ -353,9 +354,38 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                                 <span className="charge-label">{t('price.fixedFeeLabel')}</span>
                                 <span className="charge-value">{(plan.monthly_fee_eur ?? 0).toFixed(2)} {t('price.perMonthUnit')}</span>
                               </li>
+                              {plan.price_formula?.base_type === 'auto' && (
+                                <>
+                                  <li className="charge-section-title">{t('price.variableParams')}</li>
+                                  {plan.tv != null && (
+                                    <li>
+                                      <span className="charge-label">{t('price.basePrice')}</span>
+                                      <span className="charge-value">{Number(plan.tv).toFixed(4)} €/kWh</span>
+                                    </li>
+                                  )}
+                                  {plan.ll != null && (
+                                    <li>
+                                      <span className="charge-label">{t('price.lowerLimit')}</span>
+                                      <span className="charge-value">{Number(plan.ll).toFixed(4)}</span>
+                                    </li>
+                                  )}
+                                  {plan.lu != null && (
+                                    <li>
+                                      <span className="charge-label">{t('price.upperLimit')}</span>
+                                      <span className="charge-value">{Number(plan.lu).toFixed(4)}</span>
+                                    </li>
+                                  )}
+                                  {plan.alpha != null && (
+                                    <li>
+                                      <span className="charge-label">{t('price.adjustmentFactor')}</span>
+                                      <span className="charge-value">{Number(plan.alpha).toFixed(4)}</span>
+                                    </li>
+                                  )}
+                                </>
+                              )}
                             </ul>
                           ) : (
-                            <p className="plan-expanded-placeholder">{t('price.providerInfoPlaceholder')}</p>
+                            <p className="plan-expanded-placeholder">{plan.provider_info || t('price.providerInfoPlaceholder')}</p>
                           )}
                         </div>
                       </div>

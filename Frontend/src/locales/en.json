@@ -100,7 +100,11 @@
     "step": "Step",
     "currentProvider": "Current provider",
     "callMe": "I want you to call me",
-    "secureInfo": "Your information is secure"
+    "secureInfo": "Your information is secure",
+    "stepsTitle": "Just a few steps to get the package you want",
+    "stepsStep1": "Fill out the form",
+    "stepsStep2": "One of our partners calls you",
+    "stepsStep3": "We finalize the package that suits you"
   },
   "basicInfo": {
     "serviceType": "Service type",
@@ -156,7 +160,12 @@
     "nightCharge": "Night charge",
     "fixedFeeLabel": "Fixed fee",
     "perMonthUnit": "€/month",
-    "providerInfoPlaceholder": "Provider information..."
+    "providerInfoPlaceholder": "Provider information...",
+    "variableParams": "Variable tariff parameters",
+    "basePrice": "Base provider price",
+    "lowerLimit": "Lower TAE limit",
+    "upperLimit": "Upper TAE limit",
+    "adjustmentFactor": "Adjustment factor"
   },
   "detail": {
     "programDetails": "Program Details",
