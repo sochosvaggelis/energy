@@ -13,6 +13,7 @@ import { cacheClearAll } from './lib/cache'
 import './App.css'
 
 const ALL_TABS = ['Providers', 'Plans', 'Ανά Κατηγορία', 'Πελάτες', 'Settings', 'Status Settings', 'App Settings']
+const PLAN_TABS = ['Providers', 'Plans', 'Ανά Κατηγορία', 'Settings', 'Status Settings', 'App Settings']
 
 export default function App() {
   const [session, setSession] = useState(undefined)
@@ -71,11 +72,13 @@ export default function App() {
 
   const user = session.user
   const isAdmin = staffInfo?.role === 'admin'
-  const allowedTabs = isAdmin ? ALL_TABS : (staffInfo?.allowed_tabs || [])
+  const allAllowed = isAdmin ? ALL_TABS : (staffInfo?.allowed_tabs || [])
+  const allowedTabs = allAllowed.filter(t => t !== 'Πελάτες')
+  const canSeeCustomers = allAllowed.includes('Πελάτες')
   const displayName = staffInfo?.display_name || user.user_metadata?.display_name || user.email
 
   // No access
-  if (allowedTabs.length === 0) {
+  if (allowedTabs.length === 0 && !canSeeCustomers) {
     return (
       <div className="admin-app">
         <div className="no-access">
@@ -115,6 +118,18 @@ export default function App() {
             <i className="fa-solid fa-fire"></i>
             Αέριο
           </button>
+          {canSeeCustomers && (
+            <>
+              <div className="sidebar-divider" />
+              <button
+                className={`sidebar-btn ${activeCategory === 'customers' ? 'active' : ''}`}
+                onClick={() => setActiveCategory('customers')}
+              >
+                <i className="fa-solid fa-users"></i>
+                Πελάτες
+              </button>
+            </>
+          )}
         </nav>
         <div className="sidebar-footer">
           <span className="admin-user">
@@ -127,16 +142,23 @@ export default function App() {
         </div>
       </aside>
       <div className="admin-body">
-        <Tabs tabs={allowedTabs} active={currentTab} onChange={setActiveTab} />
-        <main className="admin-main">
-          {currentTab === 'Providers' && <ProvidersTab serviceType={activeCategory} />}
-          {currentTab === 'Plans' && <PlansTab serviceType={activeCategory} />}
-          {currentTab === 'Ανά Κατηγορία' && <PlansByCategoryTab serviceType={activeCategory} />}
-          {currentTab === 'Πελάτες' && <CustomersTab user={user} />}
-          {currentTab === 'Settings' && <SettingsTab />}
-          {currentTab === 'Status Settings' && <StatusSettingsTab />}
-          {currentTab === 'App Settings' && <AppSettingsTab user={user} staffInfo={staffInfo} />}
-        </main>
+        {activeCategory === 'customers' ? (
+          <main className="admin-main">
+            <CustomersTab user={user} />
+          </main>
+        ) : (
+          <>
+            <Tabs tabs={allowedTabs} active={currentTab} onChange={setActiveTab} />
+            <main className="admin-main">
+              {currentTab === 'Providers' && <ProvidersTab serviceType={activeCategory} />}
+              {currentTab === 'Plans' && <PlansTab serviceType={activeCategory} />}
+              {currentTab === 'Ανά Κατηγορία' && <PlansByCategoryTab serviceType={activeCategory} />}
+              {currentTab === 'Settings' && <SettingsTab />}
+              {currentTab === 'Status Settings' && <StatusSettingsTab />}
+              {currentTab === 'App Settings' && <AppSettingsTab user={user} staffInfo={staffInfo} />}
+            </main>
+          </>
+        )}
       </div>
     </div>
   )

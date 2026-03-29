@@ -4,7 +4,7 @@ import { supabase } from './supabase'
  * Upsert a submission via RPC (handles find-or-create server-side).
  * Returns { id, error }.
  */
-export async function upsertSubmission(formData, providersData) {
+export async function upsertSubmission(formData, providersData, activeService) {
   // Resolve provider UUID to name for readability in admin dashboard
   let providerName = formData.provider
   if (formData.provider && formData.provider !== 'unknown' && providersData?.length) {
@@ -17,6 +17,7 @@ export async function upsertSubmission(formData, providersData) {
     email: formData.email || null,
     region: formData.region,
     contact_time: formData.contact_time,
+    service_type: activeService || 'electricity',
   }
   const electricityInfo = {
     customer_type: formData.customerType,

@@ -29,6 +29,18 @@ const CUSTOMER_TYPE_LABELS = {
   professional: 'Επαγγελματίας',
 }
 
+const SERVICE_TYPE_LABELS = {
+  electricity: 'Ρεύμα',
+  gas: 'Αέριο',
+  both: 'Ρεύμα & Αέριο',
+}
+
+const SERVICE_TYPE_ICONS = {
+  electricity: 'fa-bolt',
+  gas: 'fa-fire',
+  both: 'fa-bolt',
+}
+
 const FILE_LABELS = {
   tautotita: 'Ταυτότητα',
   logariasmos: 'Λογαριασμός',
@@ -93,6 +105,7 @@ export default function CustomersTab({ user }) {
   const [error, setError] = useState(null)
   const [expandedId, setExpandedId] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [serviceFilter, setServiceFilter] = useState('all')
   const [lightbox, setLightbox] = useState(null)
   const [notesId, setNotesId] = useState(null)
   const [noteText, setNoteText] = useState('')
@@ -108,7 +121,7 @@ export default function CustomersTab({ user }) {
   // Reset to page 1 when search or filter changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [search, statusFilter])
+  }, [search, statusFilter, serviceFilter])
 
   const filtered = submissions.filter(s => {
     const lead = s.lead_info || {}
@@ -117,7 +130,9 @@ export default function CustomersTab({ user }) {
       (lead.phone || '').includes(search) ||
       (lead.email || '').toLowerCase().includes(search.toLowerCase())
     const matchesStatus = statusFilter === 'all' || s.status === statusFilter
-    return matchesSearch && matchesStatus
+    const svcType = lead.service_type || s.selected_plan?.service_type || null
+    const matchesService = serviceFilter === 'all' || svcType === serviceFilter
+    return matchesSearch && matchesStatus && matchesService
   })
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ROWS_PER_PAGE))
@@ -306,6 +321,20 @@ export default function CustomersTab({ user }) {
 
   return (
     <div className="customers-tab">
+      <nav className="tabs">
+        <button className={`tab-btn${serviceFilter === 'all' ? ' active' : ''}`} onClick={() => setServiceFilter('all')}>
+          Όλοι
+        </button>
+        <button className={`tab-btn${serviceFilter === 'electricity' ? ' active' : ''}`} onClick={() => setServiceFilter('electricity')}>
+          <i className="fa-solid fa-bolt"></i> Ρεύμα
+        </button>
+        <button className={`tab-btn${serviceFilter === 'gas' ? ' active' : ''}`} onClick={() => setServiceFilter('gas')}>
+          <i className="fa-solid fa-fire"></i> Αέριο
+        </button>
+        <button className={`tab-btn${serviceFilter === 'both' ? ' active' : ''}`} onClick={() => setServiceFilter('both')}>
+          Και τα 2
+        </button>
+      </nav>
       {/* Header toolbar */}
       <div className="ct-toolbar">
         <div className="ct-toolbar-left">
@@ -359,6 +388,7 @@ export default function CustomersTab({ user }) {
               <tr>
                 <th className="th-num">#</th>
                 <th>Όνομα</th>
+                <th>Υπηρεσία</th>
                 <th>Τηλέφωνο</th>
                 <th>Email</th>
                 <th>Περιοχή</th>
@@ -389,6 +419,18 @@ export default function CustomersTab({ user }) {
                     >
                       <td className="td-num">{(currentPage - 1) * ROWS_PER_PAGE + idx + 1}</td>
                       <td className="td-name">{lead.name || 'Χωρίς όνομα'}</td>
+                      <td>
+                        {(() => {
+                          const st = lead.service_type || plan.service_type
+                          if (!st) return '—'
+                          return (
+                            <span className={`ct-service-badge ct-service-${st}`}>
+                              <i className={`fa-solid ${SERVICE_TYPE_ICONS[st] || 'fa-bolt'}`}></i>
+                              {SERVICE_TYPE_LABELS[st] || st}
+                            </span>
+                          )
+                        })()}
+                      </td>
                       <td>
                         {lead.phone ? (
                           <a href={`tel:${lead.phone}`} className="ct-phone" onClick={e => e.stopPropagation()}>
@@ -426,7 +468,7 @@ export default function CustomersTab({ user }) {
 
                     {isExpanded && (
                       <tr className="ct-expanded-row">
-                        <td colSpan="10">
+                        <td colSpan="11">
                           <div className="ct-card-body">
                             <div className="ct-detail-grid">
                               {/* Contact info */}

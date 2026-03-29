@@ -172,7 +172,7 @@ function App() {
     setFormSubmitted(true)
     setSidebarOpen(true)
 
-    const { id, error } = await upsertSubmission(formData, providersData)
+    const { id, error } = await upsertSubmission(formData, providersData, activeService)
     if (!error && id) {
       setSubmissionId(id)
     }

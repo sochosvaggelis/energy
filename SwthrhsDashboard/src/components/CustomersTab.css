@@ -306,6 +306,38 @@
   color: var(--gray-400);
 }
 
+/* ─── Service type badge ─── */
+/* ─── Service type badge (table) ─── */
+.ct-service-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.18rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.ct-service-badge i {
+  font-size: 0.65rem;
+}
+
+.ct-service-electricity {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.ct-service-gas {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.ct-service-both {
+  background: rgba(99, 102, 241, 0.15);
+  color: #818cf8;
+}
+
 /* ─── Expanded row ─── */
 .ct-expanded-row td {
   padding: 0;

@@ -78,6 +78,12 @@
   text-align: center;
 }
 
+.sidebar-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0.5rem 0.25rem;
+}
+
 .sidebar-footer {
   padding: 1rem 1.25rem 0;
   border-top: 1px solid var(--border-subtle);
