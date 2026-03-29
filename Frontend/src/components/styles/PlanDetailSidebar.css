@@ -912,6 +912,28 @@
   display: block;
 }
 
+/* Step validation errors */
+.detail-step-errors {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.8rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #f87171;
+}
+
+.detail-step-errors li {
+  padding: 0.15rem 0;
+}
+
+.detail-step-errors li::before {
+  content: '• ';
+  color: #ef4444;
+}
+
 /* Next button */
 .detail-next-btn {
   width: 100%;

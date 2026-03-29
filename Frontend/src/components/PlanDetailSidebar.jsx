@@ -226,13 +226,19 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
     for (let i = 0; i < 8; i++) sum += parseInt(afm[i]) * (1 << (8 - i))
     return (sum % 11 % 10) === parseInt(afm[8])
   })()
-  const isStep1Valid =
-    afmValid &&
-    detailForm.doy.trim() !== '' &&
-    files.tautotita.length > 0 &&
-    files.logariasmos.length > 0 &&
-    (!isProfessional || detailForm.tiposEpixeirisis !== '') &&
-    (!(detailForm.allagiOnomatos && (!isProviderChange || isGas)) || detailForm.idiotita !== '')
+
+  const getStep1Errors = () => {
+    const errors = []
+    if (!afmValid) errors.push(t('detail.validationAfm'))
+    if (detailForm.doy.trim() === '') errors.push(t('detail.validationDoy'))
+    if (files.tautotita.length === 0) errors.push(t('detail.validationId'))
+    if (files.logariasmos.length === 0) errors.push(t('detail.validationBill'))
+    if (isProfessional && detailForm.tiposEpixeirisis === '') errors.push(t('detail.validationBusinessType'))
+    if (detailForm.allagiOnomatos && (!isProviderChange || isGas) && detailForm.idiotita === '') errors.push(t('detail.validationOwnership'))
+    return errors
+  }
+
+  const isStep1Valid = getStep1Errors().length === 0
 
   const isZenithPagia = detailForm.pagiaEntoli && selectedPlan?.provider?.toUpperCase() === 'ΖΕΝΙΘ'
 
@@ -250,50 +256,57 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
 
   const hasStep2Content = isProviderChange || detailForm.protiSyndesi || isZenithPagia || isIdioktitisE9 || isParaxorisi || isGasMetritis
 
-  const isStep2Valid = (() => {
+  const getStep2Errors = () => {
+    const errors = []
+
     // --- Zenith standing-order fields ---
     if (isZenithPagia) {
       const ibanClean = detailForm.iban.replace(/\s/g, '')
-      if (!/^GR\d{25}$/.test(ibanClean)) return false
-      // IBAN mod-97 checksum: move first 4 chars to end, convert letters to numbers, check mod 97 === 1
-      const rearranged = ibanClean.slice(4) + ibanClean.slice(0, 4)
-      const numeric = rearranged.replace(/[A-Z]/g, ch => (ch.charCodeAt(0) - 55).toString())
-      let remainder = numeric.match(/.{1,7}/g).reduce((acc, chunk) => BigInt(acc + chunk) % 97n, 0n)
-      if (remainder !== 1n) return false
-      if (!detailForm.onomaDikaiouhou.trim()) return false
-      if (!detailForm.onomaTrapezas.trim()) return false
-      if (detailForm.ibanTritosProsopo && files.ypeuthiniDilosiIban.length === 0) return false
+      const ibanFormatOk = /^GR\d{25}$/.test(ibanClean)
+      if (!ibanFormatOk) {
+        errors.push(t('detail.validationIban'))
+      } else {
+        const rearranged = ibanClean.slice(4) + ibanClean.slice(0, 4)
+        const numeric = rearranged.replace(/[A-Z]/g, ch => (ch.charCodeAt(0) - 55).toString())
+        let remainder = numeric.match(/.{1,7}/g).reduce((acc, chunk) => BigInt(acc + chunk) % 97n, 0n)
+        if (remainder !== 1n) errors.push(t('detail.validationIbanChecksum'))
+      }
+      if (!detailForm.onomaDikaiouhou.trim()) errors.push(t('detail.validationBeneficiary'))
+      if (!detailForm.onomaTrapezas.trim()) errors.push(t('detail.validationBank'))
+      if (detailForm.ibanTritosProsopo && files.ypeuthiniDilosiIban.length === 0) errors.push(t('detail.validationIbanDeclaration'))
     }
 
     // --- Gas tenant owner details ---
     if (isGasEnikiasti) {
-      if (!/^\d{9}$/.test(detailForm.afmIdioktiti.trim())) return false
-      if (!detailForm.onomaIdioktiti.trim()) return false
-      if (!/^69\d{8}$/.test(detailForm.kinitoIdioktiti.trim())) return false
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(detailForm.emailIdioktiti.trim())) return false
+      if (!/^\d{9}$/.test(detailForm.afmIdioktiti.trim())) errors.push(t('detail.validationOwnerAfm'))
+      if (!detailForm.onomaIdioktiti.trim()) errors.push(t('detail.validationOwnerName'))
+      if (!/^69\d{8}$/.test(detailForm.kinitoIdioktiti.trim())) errors.push(t('detail.validationOwnerMobile'))
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(detailForm.emailIdioktiti.trim())) errors.push(t('detail.validationOwnerEmail'))
     }
 
     // --- Required uploads based on visible step-2 sections ---
     if (isProviderChange && detailForm.ofeilesPalioParoxou) {
-      if (files.diakanonismos.length === 0) return false
-      if (files.pliromiTeleftaiasDosis.length === 0) return false
+      if (files.diakanonismos.length === 0) errors.push(t('detail.validationSettlement'))
+      if (files.pliromiTeleftaiasDosis.length === 0) errors.push(t('detail.validationLastInstallment'))
     }
-    if (detailForm.protiSyndesi && files.symvasiDeddie.length === 0) return false
-    if (isIdioktitisE9 && files.e9.length === 0) return false
-    if (isParaxorisi && files.ypeuthiniDilosiParaxorisis.length === 0) return false
-    if (isGasMetritis && files.metritisAeriou.length === 0) return false
+    if (detailForm.protiSyndesi && files.symvasiDeddie.length === 0) errors.push(t('detail.validationDeddie'))
+    if (isIdioktitisE9 && files.e9.length === 0) errors.push(t('detail.validationE9'))
+    if (isParaxorisi && files.ypeuthiniDilosiParaxorisis.length === 0) errors.push(t('detail.validationAssignment'))
+    if (isGasMetritis && files.metritisAeriou.length === 0) errors.push(t('detail.validationGasMeter'))
 
     // --- Professional business-type uploads ---
     if (isProfessional) {
-      if (detailForm.tiposEpixeirisis === 'Ατομική' && files.enarxiDrastiriotitas.length === 0) return false
+      if (detailForm.tiposEpixeirisis === 'Ατομική' && files.enarxiDrastiriotitas.length === 0) errors.push(t('detail.validationBusinessStart'))
       if (detailForm.tiposEpixeirisis === 'Εταιρία') {
-        if (files.katastatiko.length === 0) return false
-        if (files.tautotitaNomimouEkprosopou.length === 0) return false
+        if (files.katastatiko.length === 0) errors.push(t('detail.validationArticles'))
+        if (files.tautotitaNomimouEkprosopou.length === 0) errors.push(t('detail.validationLegalRepId'))
       }
     }
 
-    return true
-  })()
+    return errors
+  }
+
+  const isStep2Valid = getStep2Errors().length === 0
 
   const MAX_FILES_PER_FIELD = 5
   const MAX_FILE_SIZE_MB = 10
@@ -344,20 +357,29 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
   }
 
   const [previewFile, setPreviewFile] = useState(null)
+  const [stepErrors, setStepErrors] = useState([])
 
   const removeFile = (field, index) => {
     setFiles(prev => ({ ...prev, [field]: prev[field].filter((_, i) => i !== index) }))
   }
 
   const handleNext = () => {
-    if (activeStep === 1 && !isStep1Valid) return
-    if (activeStep === 2 && !isStep2Valid) return
+    if (activeStep === 1) {
+      const errors = getStep1Errors()
+      if (errors.length > 0) { setStepErrors(errors); return }
+    }
+    if (activeStep === 2) {
+      const errors = getStep2Errors()
+      if (errors.length > 0) { setStepErrors(errors); return }
+    }
+    setStepErrors([])
     if (activeStep < SECTION_KEYS.length - 1) {
       setActiveStep(prev => prev + 1)
     }
   }
 
   const handleBack = () => {
+    setStepErrors([])
     if (activeStep > 0) {
       setActiveStep(prev => prev - 1)
     }
@@ -1331,16 +1353,14 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             className="detail-next-btn"
                             type="button"
                             onClick={handleNext}
-                            disabled={!isActive || (step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid)}
+                            disabled={!isActive}
                           >
                             {t('common.next')}
                           </button>
-                          {isActive && ((step === 1 && !isStep1Valid) || (step === 2 && !isStep2Valid)) && (
-                            <span className="detail-next-tooltip">
-                              {step === 1
-                                ? t('detail.fillRequired')
-                                : t('detail.uploadRequired')}
-                            </span>
+                          {stepErrors.length > 0 && isActive && (step === 1 || step === 2) && (
+                            <ul className="detail-step-errors">
+                              {stepErrors.map((err, i) => <li key={i}>{err}</li>)}
+                            </ul>
                           )}
                         </div>
                       )}
