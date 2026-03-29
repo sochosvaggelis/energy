@@ -77,7 +77,7 @@ export default function PlansTab({ serviceType }) {
       .select('*, providers(name)')
       .eq('service_type', serviceType)
       .order('created_at', { ascending: true })
-    if (error) setError(error.message)
+    if (error) setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.')
     else { setPlans(data); cacheSet(plansCacheKey, data) }
     setLoading(false)
   }
@@ -101,7 +101,7 @@ export default function PlansTab({ serviceType }) {
       service_type: serviceType
     }
     const { error } = await supabase.from('plans').insert(insertData)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     setForm(emptyForm)
     setShowModal(false)
     cacheInvalidate(plansCacheKey)
@@ -137,7 +137,7 @@ export default function PlansTab({ serviceType }) {
         tariff_type: editData.tariff_type
       })
       .eq('id', id)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     setEditingId(null)
     cacheInvalidate(plansCacheKey)
     fetchPlans(true)
@@ -147,7 +147,7 @@ export default function PlansTab({ serviceType }) {
     if (!confirm('Διαγραφή αυτού του plan;')) return
     setError(null)
     const { error } = await supabase.from('plans').delete().eq('id', id)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     cacheInvalidate(plansCacheKey)
     fetchPlans(true)
   }

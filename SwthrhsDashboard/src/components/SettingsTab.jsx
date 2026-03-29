@@ -19,7 +19,7 @@ export default function SettingsTab() {
       .from('settings')
       .select('*')
       .order('key')
-    if (error) setError(error.message)
+    if (error) setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.')
     else setVariables(data || [])
     setLoading(false)
   }
@@ -34,7 +34,7 @@ export default function SettingsTab() {
         value,
         updated_at: new Date().toISOString()
       }, { onConflict: 'key' })
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     setSaved(key)
     setTimeout(() => setSaved(null), 2000)
   }
@@ -47,7 +47,7 @@ export default function SettingsTab() {
     const { error } = await supabase
       .from('settings')
       .insert({ key: trimmedKey, value: newValue })
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     setNewKey('')
     setNewValue('')
     setShowAdd(false)
@@ -58,7 +58,7 @@ export default function SettingsTab() {
     if (!confirm(`Διαγραφή μεταβλητής "${key}";`)) return
     setError(null)
     const { error } = await supabase.from('settings').delete().eq('key', key)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     fetchVariables()
   }
 

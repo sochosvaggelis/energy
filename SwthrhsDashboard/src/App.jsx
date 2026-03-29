@@ -31,10 +31,10 @@ export default function App() {
       if (!session) { setStaffInfo(null); setStaffLoading(true) }
     })
 
-    // Auto-refresh every 1 hour
+    // Auto-refresh session every 1 hour (with user confirmation)
     const refreshInterval = setInterval(() => {
       cacheClearAll()
-      window.location.reload()
+      supabase.auth.refreshSession()
     }, 60 * 60 * 1000)
 
     return () => {
@@ -135,7 +135,7 @@ export default function App() {
           {currentTab === 'Πελάτες' && <CustomersTab user={user} />}
           {currentTab === 'Settings' && <SettingsTab />}
           {currentTab === 'Status Settings' && <StatusSettingsTab />}
-          {currentTab === 'App Settings' && <AppSettingsTab user={user} />}
+          {currentTab === 'App Settings' && <AppSettingsTab user={user} staffInfo={staffInfo} />}
         </main>
       </div>
     </div>

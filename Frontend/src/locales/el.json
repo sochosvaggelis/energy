@@ -177,6 +177,7 @@
     "fileLimitsHint": "Έως {{maxFiles}} αρχεία ανά πεδίο, έως {{maxSize}}MB το καθένα",
     "fileTooLarge": "Το αρχείο υπερβαίνει το όριο των {{max}}MB",
     "tooManyFiles": "Έως {{max}} αρχεία ανά πεδίο",
+    "invalidFileType": "Μη αποδεκτός τύπος αρχείου. Επιτρέπονται μόνο PDF, PNG, JPG, WEBP, HEIC.",
     "service": "Υπηρεσία:",
     "packageName": "Όνομα πακέτου:",
     "providerName": "Όνομα παρόχου:",

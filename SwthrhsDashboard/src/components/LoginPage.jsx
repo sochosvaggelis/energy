@@ -14,7 +14,7 @@ export default function LoginPage() {
     setError(null)
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setError(error.message)
+    if (error) setError('Λάθος email ή κωδικός.')
     setLoading(false)
   }
 

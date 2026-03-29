@@ -15,7 +15,8 @@ export async function logAction(action, { entity, entityId, details } = {}) {
       entity_id: entityId || null,
       details: details || null,
     })
-  } catch {
-    // silent — audit should never block the main operation
+  } catch (err) {
+    // Audit should never block the main operation, but log in dev for debugging
+    if (import.meta.env.DEV) console.warn('Audit log failed:', action, err)
   }
 }

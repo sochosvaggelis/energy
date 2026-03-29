@@ -59,12 +59,12 @@ function App() {
         ])
 
         if (plansRes.error) {
-          console.error('Failed to load plans:', plansRes.error)
+          if (import.meta.env.DEV) console.error('Failed to load plans:', plansRes.error)
           setFetchError('Failed to load plan data. Please reload the page.')
           return
         }
         if (providersRes.error) {
-          console.error('Failed to load providers:', providersRes.error)
+          if (import.meta.env.DEV) console.error('Failed to load providers:', providersRes.error)
           setFetchError('Failed to load provider data. Please reload the page.')
           return
         }
@@ -100,7 +100,7 @@ function App() {
         setPricesData(flat)
         if (providersRes.data) setProvidersData(providersRes.data)
       } catch (err) {
-        console.error('Unexpected error loading data:', err)
+        if (import.meta.env.DEV) console.error('Unexpected error loading data:', err)
         setFetchError('An unexpected error occurred. Please reload the page.')
       }
     }

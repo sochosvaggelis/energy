@@ -6,7 +6,7 @@ import './AppSettingsTab.css'
 const ALL_TABS = ['Providers', 'Plans', 'Ανά Κατηγορία', 'Πελάτες', 'Settings', 'App Settings']
 const ROLE_OPTIONS = ['admin', 'employee']
 
-export default function AppSettingsTab({ user }) {
+export default function AppSettingsTab({ user, staffInfo }) {
   const [staff, setStaff] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -28,13 +28,17 @@ export default function AppSettingsTab({ user }) {
       .from('staff')
       .select('*')
       .order('created_at', { ascending: true })
-    if (error) setError(error.message)
+    if (error) setError('Αποτυχία φόρτωσης χρηστών.')
     else setStaff(data)
     setLoading(false)
   }
 
   async function updateStaffField(userId, field, value) {
     setError(null)
+    if (staffInfo?.role !== 'admin') {
+      setError('Μόνο οι διαχειριστές μπορούν να τροποποιήσουν χρήστες')
+      return
+    }
     const update = { [field]: value }
     // If role becomes admin, give all tabs
     if (field === 'role' && value === 'admin') {
@@ -44,7 +48,7 @@ export default function AppSettingsTab({ user }) {
       .from('staff')
       .update(update)
       .eq('user_id', userId)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Αποτυχία ενημέρωσης. Δοκιμάστε ξανά.'); return }
     logAction('update_staff', { entity: 'staff', entityId: userId, details: update })
     setStaff(prev => prev.map(s =>
       s.user_id === userId ? { ...s, ...update } : s
@@ -63,12 +67,21 @@ export default function AppSettingsTab({ user }) {
 
   async function createUser() {
     if (!newEmail || !newPassword || !newName) return
+    if (staffInfo?.role !== 'admin') {
+      setError('Μόνο οι διαχειριστές μπορούν να δημιουργήσουν χρήστες')
+      return
+    }
+    if (newPassword.length < 8) {
+      setError('Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες')
+      return
+    }
     setCreating(true)
     setError(null)
     setSuccess(null)
 
-    // Create auth user via Supabase Admin (requires service_role or inviteUserByEmail)
-    // Using signUp which works with anon key
+    // NOTE: Ideally use Supabase Admin API via Edge Function with service_role key.
+    // Ensure "Allow new users to sign up" is DISABLED in Supabase Auth settings
+    // so that only this admin flow can create accounts.
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: newEmail,
       password: newPassword,
@@ -78,7 +91,7 @@ export default function AppSettingsTab({ user }) {
     })
 
     if (authError) {
-      setError(authError.message)
+      setError('Αποτυχία δημιουργίας χρήστη. Δοκιμάστε ξανά.')
       setCreating(false)
       return
     }
@@ -102,7 +115,7 @@ export default function AppSettingsTab({ user }) {
       })
 
     if (staffError) {
-      setError(staffError.message)
+      setError('Αποτυχία δημιουργίας εγγραφής staff. Δοκιμάστε ξανά.')
       setCreating(false)
       return
     }
@@ -119,6 +132,10 @@ export default function AppSettingsTab({ user }) {
   }
 
   async function removeUser(userId, name) {
+    if (staffInfo?.role !== 'admin') {
+      setError('Μόνο οι διαχειριστές μπορούν να αφαιρέσουν χρήστες')
+      return
+    }
     if (user && userId === user.id) {
       setError('Δεν μπορείτε να διαγράψετε τον δικό σας λογαριασμό')
       return
@@ -129,7 +146,7 @@ export default function AppSettingsTab({ user }) {
       .from('staff')
       .delete()
       .eq('user_id', userId)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Αποτυχία διαγραφής. Δοκιμάστε ξανά.'); return }
     logAction('remove_staff', { entity: 'staff', entityId: userId, details: { name } })
     setStaff(prev => prev.filter(s => s.user_id !== userId))
   }
@@ -168,10 +185,11 @@ export default function AppSettingsTab({ user }) {
             <label className="as-field">
               <span>Κωδικός</span>
               <input
-                type="text"
+                type="password"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                placeholder="Κωδικός"
+                placeholder="Τουλάχιστον 8 χαρακτήρες"
+                autoComplete="new-password"
               />
             </label>
             <label className="as-field">

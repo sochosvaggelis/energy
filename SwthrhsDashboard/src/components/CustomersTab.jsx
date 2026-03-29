@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { cacheGet, cacheSet } from '../lib/cache'
 import { logAction } from '../lib/audit'
@@ -146,7 +146,7 @@ export default function CustomersTab({ user }) {
       .from('submissions')
       .select('*')
       .order('submitted_at', { ascending: false })
-    if (error) setError(error.message)
+    if (error) setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.')
     else { setSubmissions(data); cacheSet(CACHE_KEY, data) }
     setLoading(false)
   }
@@ -158,7 +158,7 @@ export default function CustomersTab({ user }) {
       .update({ status: newStatus })
       .eq('id', id)
       .select()
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     logAction('update_status', { entity: 'submission', entityId: id, details: { status: newStatus } })
     const row = data?.[0]
     if (row) {
@@ -182,7 +182,7 @@ export default function CustomersTab({ user }) {
       .update({ notes: updatedNotes })
       .eq('id', id)
       .select()
-    if (error) { setError(error.message); setNotesSaving(false); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); setNotesSaving(false); return }
 
     const row = data?.[0]
     if (row) {
@@ -204,7 +204,7 @@ export default function CustomersTab({ user }) {
       .update({ notes: updatedNotes })
       .eq('id', subId)
       .select()
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
 
     const row = data?.[0]
     if (row) {
@@ -242,15 +242,61 @@ export default function CustomersTab({ user }) {
     }
   }
 
-  function isImageUrl(url) {
-    if (!url) return false
-    return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(url)
+  function isImagePath(urlOrPath) {
+    if (!urlOrPath) return false
+    return /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(urlOrPath)
   }
+
+  function isStoragePath(val) {
+    return val && !val.startsWith('http')
+  }
+
+  const signedUrlCache = useRef({})
+
+  const resolveFileUrl = useCallback(async (pathOrUrl) => {
+    if (!pathOrUrl) return null
+    if (!isStoragePath(pathOrUrl)) return pathOrUrl
+    if (signedUrlCache.current[pathOrUrl]) {
+      const cached = signedUrlCache.current[pathOrUrl]
+      if (cached.expiry > Date.now()) return cached.url
+    }
+    const { data, error } = await supabase.storage.from('uploads').createSignedUrl(pathOrUrl, 3600)
+    if (error || !data?.signedUrl) return null
+    signedUrlCache.current[pathOrUrl] = { url: data.signedUrl, expiry: Date.now() + 3500 * 1000 }
+    return data.signedUrl
+  }, [])
 
   function openNotes(e, id) {
     e.stopPropagation()
     setNotesId(id)
     setNoteText('')
+  }
+
+  function FileThumb({ pathOrUrl, label, index, onLightbox }) {
+    const [url, setUrl] = useState(isStoragePath(pathOrUrl) ? null : pathOrUrl)
+
+    useEffect(() => {
+      if (!pathOrUrl || !isStoragePath(pathOrUrl)) return
+      let cancelled = false
+      resolveFileUrl(pathOrUrl).then(resolved => { if (!cancelled && resolved) setUrl(resolved) })
+      return () => { cancelled = true }
+    }, [pathOrUrl])
+
+    if (!url) return <span className="ct-file-loading">...</span>
+
+    return isImagePath(pathOrUrl) ? (
+      <img
+        src={url}
+        alt={`${label} ${index + 1}`}
+        className="ct-file-thumb"
+        onClick={() => onLightbox(url)}
+      />
+    ) : (
+      <a href={url} target="_blank" rel="noopener noreferrer" className="ct-file-pdf">
+        <i className="fa-solid fa-file-pdf"></i>
+        <span>PDF {index > 0 ? index + 1 : ''}</span>
+      </a>
+    )
   }
 
   return (
@@ -450,27 +496,14 @@ export default function CustomersTab({ user }) {
                                       <div key={key} className="ct-file-group">
                                         <span className="ct-file-label">{label}</span>
                                         <div className="ct-file-previews">
-                                          {list.map((url, i) => (
-                                            isImageUrl(url) ? (
-                                              <img
-                                                key={i}
-                                                src={url}
-                                                alt={`${label} ${i + 1}`}
-                                                className="ct-file-thumb"
-                                                onClick={() => setLightbox(url)}
-                                              />
-                                            ) : (
-                                              <a
-                                                key={i}
-                                                href={url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="ct-file-pdf"
-                                              >
-                                                <i className="fa-solid fa-file-pdf"></i>
-                                                <span>PDF {list.length > 1 ? i + 1 : ''}</span>
-                                              </a>
-                                            )
+                                          {list.map((item, i) => (
+                                            <FileThumb
+                                              key={i}
+                                              pathOrUrl={item}
+                                              label={label}
+                                              index={i}
+                                              onLightbox={setLightbox}
+                                            />
                                           ))}
                                         </div>
                                       </div>

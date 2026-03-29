@@ -508,7 +508,7 @@ export default function PlansByCategoryTab({ serviceType }) {
       .select('*, providers(name)')
       .eq('service_type', serviceType)
       .order('created_at', { ascending: true })
-    if (error) setError(error.message)
+    if (error) setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.')
     else { setPlans(data); cacheSet(cacheKey, data) }
     setLoading(false)
   }
@@ -574,7 +574,7 @@ export default function PlansByCategoryTab({ serviceType }) {
       pricing_tiers: serializeTiers(editData.pricing_tiers)
     }
     const { error } = await supabase.from('plans').update(updateData).eq('id', id)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     setEditingId(null)
     cacheInvalidate(CACHE_KEY_PLANS)
     fetchPlans(true)
@@ -584,7 +584,7 @@ export default function PlansByCategoryTab({ serviceType }) {
     if (!confirm('Διαγραφή αυτού του plan;')) return
     setError(null)
     const { error } = await supabase.from('plans').delete().eq('id', id)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     cacheInvalidate(CACHE_KEY_PLANS)
     fetchPlans(true)
   }

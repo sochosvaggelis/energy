@@ -17,6 +17,7 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
     const [basicInfo, setBasicInfo] = useState({})
     const [throwError, setThrowError] = useState()
     const [step, setStep] = useState(1)
+    const [honeypot, setHoneypot] = useState('')
 
     const handleToggle = (service, isActive) => {
         if (isActive) {
@@ -44,7 +45,10 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
         e.preventDefault()
         setThrowError(null)
 
-        if (!formData.name || !formData.name.trim()) {
+        // Honeypot: bots fill hidden fields, humans don't
+        if (honeypot) return
+
+        if (!formData.name || !formData.name.trim() || formData.name.trim().length > 255) {
             setThrowError('errors.name')
             return
         }
@@ -52,7 +56,7 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
             setThrowError('errors.phone')
             return
         }
-        if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        if (!formData.email || formData.email.length > 320 || !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(formData.email)) {
             setThrowError('errors.email')
             return
         }
@@ -139,6 +143,17 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
                 </div>
 
             <form id="leadForm" onSubmit={handleSubmit}>
+                {/* Honeypot field — invisible to users, bots fill it automatically */}
+                <input
+                    type="text"
+                    name="website"
+                    value={honeypot}
+                    onChange={e => setHoneypot(e.target.value)}
+                    autoComplete="off"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0 }}
+                />
                 <div className={`service-toggle ${toggleOpen ? 'open' : ''}`}>
                     <button
                         type="button"

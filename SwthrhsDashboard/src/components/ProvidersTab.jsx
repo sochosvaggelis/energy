@@ -7,11 +7,28 @@ const CACHE_KEY = 'admin_providers'
 
 const safeNumber = (val, def = 0) => { const n = Number(val); return isNaN(n) ? def : n }
 
+function sanitizeSvg(svg) {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(svg, 'image/svg+xml')
+  // Remove dangerous elements
+  doc.querySelectorAll('script, foreignObject, use[href^="data:"], use[xlink\\:href^="data:"]').forEach(el => el.remove())
+  // Remove event handler attributes from all elements
+  doc.querySelectorAll('*').forEach(el => {
+    for (const attr of [...el.attributes]) {
+      if (attr.name.startsWith('on') || attr.name === 'href' && attr.value.startsWith('javascript:')) {
+        el.removeAttribute(attr.name)
+      }
+    }
+  })
+  return new XMLSerializer().serializeToString(doc.documentElement)
+}
+
 function svgToDataUri(svg) {
   if (!svg || !svg.trim()) return null
   const trimmed = svg.trim()
   if (trimmed.startsWith('data:')) return trimmed
-  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(trimmed)))
+  const clean = sanitizeSvg(trimmed)
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(clean)))
 }
 
 function dataUriToSvg(dataUri) {
@@ -59,7 +76,7 @@ export default function ProvidersTab({ serviceType }) {
         .select('*')
         .eq('has_gas', true)
         .order('created_at', { ascending: true })
-      if (error) setError(error.message)
+      if (error) setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.')
       else { setProviders(data); cacheSet(cacheKey, data) }
     } else {
       // Electricity tab: show providers that have at least one electricity plan
@@ -67,7 +84,7 @@ export default function ProvidersTab({ serviceType }) {
         .from('plans')
         .select('provider_id')
         .eq('service_type', serviceType)
-      if (planErr) { setError(planErr.message); setLoading(false); return }
+      if (planErr) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); setLoading(false); return }
       const providerIds = [...new Set(planRows.map(r => r.provider_id))]
       if (providerIds.length === 0) { setProviders([]); cacheSet(cacheKey, []); setLoading(false); return }
       const { data, error } = await supabase
@@ -75,7 +92,7 @@ export default function ProvidersTab({ serviceType }) {
         .select('*')
         .in('id', providerIds)
         .order('created_at', { ascending: true })
-      if (error) setError(error.message)
+      if (error) setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.')
       else { setProviders(data); cacheSet(cacheKey, data) }
     }
     setLoading(false)
@@ -90,7 +107,7 @@ export default function ProvidersTab({ serviceType }) {
       logo_url: svgToDataUri(form.logo_svg),
       has_gas: form.has_gas || false,
     })
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     setForm({ name: '', adjustment_factor: '', logo_svg: '', has_gas: false })
     setShowModal(false)
     cacheInvalidate(cacheKey, 'admin_plans', `${CACHE_KEY}_gas`, `${CACHE_KEY}_electricity`)
@@ -101,7 +118,7 @@ export default function ProvidersTab({ serviceType }) {
     setError(null)
     const newVal = !provider.has_gas
     const { error } = await supabase.from('providers').update({ has_gas: newVal }).eq('id', provider.id)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     cacheInvalidate(cacheKey, 'admin_plans', `${CACHE_KEY}_gas`, `${CACHE_KEY}_electricity`)
     fetchProviders(true)
   }
@@ -122,7 +139,7 @@ export default function ProvidersTab({ serviceType }) {
       adjustment_factor: editData.adjustment_factor !== '' ? safeNumber(editData.adjustment_factor, null) : null,
       info_text: editData.info_text || '',
     }).eq('id', id)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     setEditingId(null)
     cacheInvalidate(cacheKey, 'admin_plans')
     fetchProviders(true)
@@ -141,7 +158,7 @@ export default function ProvidersTab({ serviceType }) {
     const { error } = await supabase.from('providers').update({
       logo_url: svgToDataUri(editLogoModal.svg)
     }).eq('id', editLogoModal.id)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     setEditLogoModal(null)
     cacheInvalidate(cacheKey, 'admin_plans')
     fetchProviders(true)
@@ -151,7 +168,7 @@ export default function ProvidersTab({ serviceType }) {
     if (!confirm('Διαγραφή αυτού του provider;')) return
     setError(null)
     const { error } = await supabase.from('providers').delete().eq('id', id)
-    if (error) { setError(error.message); return }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
     cacheInvalidate(cacheKey, 'admin_plans')
     fetchProviders(true)
   }

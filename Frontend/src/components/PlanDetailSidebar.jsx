@@ -218,7 +218,14 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
 
   const isGas = selectedPlan?.service_type === 'gas'
 
-  const afmValid = /^\d{9}$/.test(detailForm.afm.trim())
+  const afmValid = (() => {
+    const afm = detailForm.afm.trim()
+    if (!/^\d{9}$/.test(afm)) return false
+    // Greek AFM mod-11 checksum
+    let sum = 0
+    for (let i = 0; i < 8; i++) sum += parseInt(afm[i]) * (1 << (8 - i))
+    return (sum % 11 % 10) === parseInt(afm[8])
+  })()
   const isStep1Valid =
     afmValid &&
     detailForm.doy.trim() !== '' &&
@@ -248,6 +255,11 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
     if (isZenithPagia) {
       const ibanClean = detailForm.iban.replace(/\s/g, '')
       if (!/^GR\d{25}$/.test(ibanClean)) return false
+      // IBAN mod-97 checksum: move first 4 chars to end, convert letters to numbers, check mod 97 === 1
+      const rearranged = ibanClean.slice(4) + ibanClean.slice(0, 4)
+      const numeric = rearranged.replace(/[A-Z]/g, ch => (ch.charCodeAt(0) - 55).toString())
+      let remainder = numeric.match(/.{1,7}/g).reduce((acc, chunk) => BigInt(acc + chunk) % 97n, 0n)
+      if (remainder !== 1n) return false
       if (!detailForm.onomaDikaiouhou.trim()) return false
       if (!detailForm.onomaTrapezas.trim()) return false
       if (detailForm.ibanTritosProsopo && files.ypeuthiniDilosiIban.length === 0) return false
@@ -286,12 +298,27 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
   const MAX_FILES_PER_FIELD = 5
   const MAX_FILE_SIZE_MB = 10
   const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+  const ALLOWED_EXTENSIONS = ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'heic', 'heif']
+  const ALLOWED_MIME_TYPES = [
+    'application/pdf',
+    'image/png', 'image/jpeg', 'image/webp', 'image/heic', 'image/heif'
+  ]
   const [fileError, setFileError] = useState(null)
 
   const handleFileChange = (field) => (e) => {
     const newFiles = Array.from(e.target.files || [])
     if (newFiles.length === 0) return
     setFileError(null)
+
+    const invalidType = newFiles.find(f => {
+      const ext = f.name.split('.').pop().toLowerCase()
+      return !ALLOWED_EXTENSIONS.includes(ext) || !ALLOWED_MIME_TYPES.includes(f.type)
+    })
+    if (invalidType) {
+      setFileError(t('detail.invalidFileType'))
+      e.target.value = ''
+      return
+    }
 
     const oversized = newFiles.find(f => f.size > MAX_FILE_SIZE_BYTES)
     if (oversized) {
@@ -342,15 +369,17 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
 
   const uploadFiles = useCallback(async (fieldFiles, folder) => {
     const results = await Promise.all(fieldFiles.map(async (file) => {
-      const ext = file.name.split('.').pop()
-      const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-      const { error } = await supabase.storage.from('uploads').upload(path, file)
-      if (error) {
-        console.error(`Upload failed for ${file.name}:`, error)
+      const ext = file.name.split('.').pop().toLowerCase()
+      if (!ALLOWED_EXTENSIONS.includes(ext)) {
         return { url: null, failed: true, name: file.name }
       }
-      const { data: urlData } = supabase.storage.from('uploads').getPublicUrl(path)
-      return { url: urlData.publicUrl, failed: false, name: file.name }
+      const path = `${folder}/${crypto.randomUUID()}.${ext}`
+      const { error } = await supabase.storage.from('uploads').upload(path, file)
+      if (error) {
+        if (import.meta.env.DEV) console.error(`Upload failed for ${file.name}:`, error)
+        return { url: null, failed: true, name: file.name }
+      }
+      return { url: path, failed: false, name: file.name }
     }))
     const failedFiles = results.filter(r => r.failed).map(r => r.name)
     const urls = results.filter(r => !r.failed).map(r => r.url)
@@ -362,7 +391,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
     setSubmitResult(null)
     setUploadWarning(null)
     try {
-      const folder = submissionId || `${Date.now()}_${Math.random().toString(36).slice(2)}`
+      const folder = submissionId || crypto.randomUUID()
 
       const [
         logariasmosResult,
@@ -488,7 +517,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
       if (error) throw error
       setSubmitResult('success')
     } catch (err) {
-      console.error('Submit error:', err)
+      if (import.meta.env.DEV) console.error('Submit error:', err)
       setSubmitResult('error')
     } finally {
       setSubmitting(false)

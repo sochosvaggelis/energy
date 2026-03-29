@@ -177,6 +177,7 @@
     "fileLimitsHint": "Up to {{maxFiles}} files per field, {{maxSize}}MB each",
     "fileTooLarge": "File exceeds the {{max}}MB limit",
     "tooManyFiles": "Up to {{max}} files per field",
+    "invalidFileType": "Invalid file type. Only PDF, PNG, JPG, WEBP, HEIC are allowed.",
     "service": "Service:",
     "packageName": "Package name:",
     "providerName": "Provider name:",

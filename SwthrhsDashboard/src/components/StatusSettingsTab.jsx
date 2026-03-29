@@ -47,7 +47,7 @@ export default function StatusSettingsTab() {
         value: JSON.stringify(list),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'key' })
-    if (error) { setError(error.message); return false }
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return false }
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
     return true
