@@ -55,13 +55,17 @@
 }
 
 .faq-answer {
-  max-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.faq-answer > p {
   overflow: hidden;
-  transition: max-height 0.3s ease;
 }
 
 .faq-item.active .faq-answer {
-  max-height: 200px;
+  grid-template-rows: 1fr;
 }
 
 .faq-answer p {

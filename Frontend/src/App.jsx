@@ -119,9 +119,11 @@ function App() {
   }, [darkMode])
 
   const scrollToForm = () => {
-    document.querySelector('.form-card')?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
+    requestAnimationFrame(() => {
+      document.querySelector('.form-card')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
     })
   }
 

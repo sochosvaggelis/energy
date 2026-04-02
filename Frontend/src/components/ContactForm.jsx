@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from '../context/LanguageContext'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronDown, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons'
 import SpecificInfo from './formSteps/SpecificInfo'
 import BasicInfo from './formSteps/BasicInfo'
 import ProviderInfo from './formSteps/ProviderInfo'
@@ -160,7 +162,7 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
                         onClick={() => handleToggle('electricity', activeService === 'electricity')}
                     >
                             {t('common.electricity')}
-                        <i className="fa-solid fa-chevron-down toggle-arrow"></i>
+                        <FontAwesomeIcon icon={faChevronDown} className="toggle-arrow" />
                     </button>
                     <button
                         type="button"
@@ -168,7 +170,7 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
                         onClick={() => handleToggle('gas', activeService === 'gas')}
                     >
                         {t('common.gas')}
-                        <i className="fa-solid fa-chevron-down toggle-arrow"></i>
+                        <FontAwesomeIcon icon={faChevronDown} className="toggle-arrow" />
                     </button>
                     <button
                         type="button"
@@ -176,14 +178,14 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
                         onClick={() => handleToggle('both', activeService === 'both')}
                     >
                         {t('common.both')}
-                        <i className="fa-solid fa-chevron-down toggle-arrow"></i>
+                        <FontAwesomeIcon icon={faChevronDown} className="toggle-arrow" />
                     </button>
                 </div>
 
                 <div className="step-indicator">
                     <div className="step-text">{t('form.step')} {step}/3</div>
                     <div className="step-bar">
-                        <div className="step-bar-fill" style={{ width: `${(step / 3) * 100}%` }} />
+                        <div className="step-bar-fill" style={{ transform: `scaleX(${step / 3})` }} />
                     </div>
                 </div>
 
@@ -211,11 +213,11 @@ export default function ContactForm({ formData, setFormData, onFormSubmit, provi
                 <div className="form-buttons">
                     {step > 1 && (
                         <button type="button" onClick={handleBack} className="back-btn" aria-label="Προηγούμενο βήμα">
-                            <i className="fa-solid fa-arrow-left"></i>
+                            <FontAwesomeIcon icon={faArrowLeft} />
                         </button>
                     )}
                     <button type={step === 3 ? 'submit' : 'button'} onClick={step !== 3 ? handleNext : undefined} className="next-btn" aria-label={step !== 3 ? 'Επόμενο βήμα' : undefined}>
-                        {step !== 3 ? <i className="fa-solid fa-arrow-right fa-xl"></i> : t('form.callMe')}
+                        {step !== 3 ? <FontAwesomeIcon icon={faArrowRight} size="xl" /> : t('form.callMe')}
                     </button>
                 </div>
 
