@@ -155,6 +155,9 @@ body.light-mode .nav-cta:hover {
 @media (max-width: 480px) {
   nav {
     padding: 0.75rem 1rem;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #0b1729;
   }
 
   .nav-content {
@@ -179,6 +182,14 @@ body.light-mode .nav-cta:hover {
   .nav-sidebar-toggle {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body.light-mode nav {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: #1a2744;
   }
 }
 

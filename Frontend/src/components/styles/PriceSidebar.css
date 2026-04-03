@@ -838,14 +838,15 @@ body.light-mode .plan-select-btn {
     position: fixed;
     inset: 0;
     z-index: 199;
-    background: rgba(0, 0, 0, 0.6);
-    -webkit-backdrop-filter: blur(4px);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.7);
     animation: fadeIn 0.3s ease;
   }
 
   .price-sidebar {
     width: 100%;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--bg-body);
   }
 
   .sidebar-close-btn {

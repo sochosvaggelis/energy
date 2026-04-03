@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react'
-import { supabase } from './lib/supabase'
-import { upsertSubmission } from './lib/submissions'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import Footer from './components/Footer'
@@ -53,6 +51,7 @@ function App() {
   useEffect(() => {
     async function loadPrices() {
       try {
+        const { supabase } = await import('./lib/supabase')
         const [plansRes, settingsRes, providersRes] = await Promise.all([
           supabase.from('plans').select('*, providers(name, adjustment_factor, logo_url, info_text)'),
           supabase.from('settings').select('key, value'),
@@ -174,6 +173,7 @@ function App() {
     setFormSubmitted(true)
     setSidebarOpen(true)
 
+    const { upsertSubmission } = await import('./lib/submissions')
     const { id, error } = await upsertSubmission(formData, providersData, activeService)
     if (!error && id) {
       setSubmissionId(id)

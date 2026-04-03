@@ -29,6 +29,9 @@ export default function ProviderInfo({ formData, setFormData, throwError, setThr
                         key={provider.id}
                         src={provider.logo_url}
                         alt={provider.name}
+                        loading="lazy"
+                        width="120"
+                        height="60"
                         role="button"
                         tabIndex={0}
                         className={formData.provider === provider.id ? 'selected' : ''}

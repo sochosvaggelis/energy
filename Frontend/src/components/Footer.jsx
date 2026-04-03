@@ -1,7 +1,8 @@
+import { memo } from 'react'
 import { useTranslation } from '../context/LanguageContext'
 import './styles/Footer.css'
 
-function Footer() {
+const Footer = memo(function Footer() {
   const { t } = useTranslation()
 
   return (
@@ -20,6 +21,6 @@ function Footer() {
       </div>
     </footer>
   )
-}
+})
 
 export default Footer

@@ -1,8 +1,9 @@
+import { memo } from 'react'
 import { useTranslation } from '../context/LanguageContext'
 
 import './styles/Nav.css'
 
-function Nav({ onCtaClick, sidebarOpen, onSidebarToggle }) {
+const Nav = memo(function Nav({ onCtaClick, sidebarOpen, onSidebarToggle }) {
   const { t } = useTranslation()
 
   return (
@@ -23,6 +24,6 @@ function Nav({ onCtaClick, sidebarOpen, onSidebarToggle }) {
       </div>
     </nav>
   )
-}
+})
 
 export default Nav
