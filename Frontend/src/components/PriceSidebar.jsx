@@ -371,6 +371,12 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                                 <span className="charge-label">{t('price.fixedFeeLabel')}</span>
                                 <span className="charge-value">{(plan.monthly_fee_eur ?? 0).toFixed(2)} {t('price.perMonthUnit')}</span>
                               </li>
+                              {plan.duration && (
+                                <li>
+                                  <span className="charge-label">Διάρκεια</span>
+                                  <span className="charge-value">{plan.duration} μήνες</span>
+                                </li>
+                              )}
                               <li className="charge-vat">
                                 <span className="charge-label">ΦΠΑ 6%</span>
                                 <span className="charge-value">{plan.vat.toFixed(2)} €</span>

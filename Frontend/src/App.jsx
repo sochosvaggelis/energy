@@ -86,6 +86,7 @@ function App() {
           service_type: plan.service_type,
           plan: plan.plan_name,
           tariff_type: plan.tariff_type,
+          duration: plan.duration,
           price_per_kwh: plan.price_per_kwh,
           night_price_per_kwh: plan.night_price_per_kwh,
           monthly_fee_eur: plan.monthly_fee_eur,

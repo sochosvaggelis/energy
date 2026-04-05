@@ -230,10 +230,8 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
     const errors = []
     if (!afmValid) errors.push(t('detail.validationAfm'))
     if (detailForm.doy.trim() === '') errors.push(t('detail.validationDoy'))
-    if (files.tautotita.length === 0) errors.push(t('detail.validationId'))
-    if (files.logariasmos.length === 0) errors.push(t('detail.validationBill'))
     if (isProfessional && detailForm.tiposEpixeirisis === '') errors.push(t('detail.validationBusinessType'))
-    if (detailForm.allagiOnomatos && (!isProviderChange || isGas) && detailForm.idiotita === '') errors.push(t('detail.validationOwnership'))
+    if (detailForm.idiotita === '') errors.push(t('detail.validationOwnership'))
     return errors
   }
 
@@ -241,7 +239,7 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
 
   const isZenithPagia = detailForm.pagiaEntoli && selectedPlan?.provider?.toUpperCase() === 'ΖΕΝΙΘ'
 
-  const isIdioktitisE9 = detailForm.allagiOnomatos && (!isProviderChange || isGas) && detailForm.idiotita === 'Ιδιοκτήτης'
+  const isIdioktitisE9 = (!isProviderChange || isGas) && detailForm.idiotita === 'Ιδιοκτήτης'
 
   const isParaxorisi = isIdioktitisE9 && detailForm.paraxorisiTrito
 
@@ -250,13 +248,13 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
 
   const isGasEnikiasti = isGas &&
     formData?.region === 'attiki' &&
-    detailForm.allagiOnomatos &&
     detailForm.idiotita === 'Ενοικιαστής'
 
-  const hasStep2Content = isProviderChange || detailForm.protiSyndesi || isZenithPagia || isIdioktitisE9 || isParaxorisi || isGasMetritis
 
   const getStep2Errors = () => {
     const errors = []
+    if (files.tautotita.length === 0) errors.push(t('detail.validationId'))
+    if (files.logariasmos.length === 0) errors.push(t('detail.validationBill'))
 
     // --- Zenith standing-order fields ---
     if (isZenithPagia) {
@@ -606,10 +604,10 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                     )}
                   </div>
                   <h4 className="detail-section-title">{t(titleKey)}</h4>
-                  {step === 1 && <span className="detail-accepted-formats">{t('detail.fileLimitsHint', { maxFiles: MAX_FILES_PER_FIELD, maxSize: MAX_FILE_SIZE_MB })}</span>}
+                  {step === 2 && <span className="detail-accepted-formats">{t('detail.fileLimitsHint', { maxFiles: MAX_FILES_PER_FIELD, maxSize: MAX_FILE_SIZE_MB })}</span>}
                 </div>
 
-                {step === 1 && fileError && (
+                {step === 2 && fileError && (
                   <div className="detail-file-error" onClick={() => setFileError(null)}>
                     {fileError}
                   </div>
@@ -631,6 +629,12 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                           <span className="detail-plan-label">{t('detail.providerName')}</span>
                           <span className="detail-plan-value">{selectedPlan.provider}</span>
                         </div>
+                        {selectedPlan.duration && (
+                          <div className="detail-plan-row">
+                            <span className="detail-plan-label">Διάρκεια</span>
+                            <span className="detail-plan-value">{selectedPlan.duration} μήνες</span>
+                          </div>
+                        )}
                       </div>
                       <div className="detail-plan-logo">
                         {selectedPlan.provider_logo ? (
@@ -646,16 +650,6 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                     <div className="detail-form">
                       <div className="detail-form-subsection">
                         <h5 className="detail-form-subtitle">{t('detail.personalInfo')}</h5>
-
-                        <div className="detail-form-group">
-                          <label>{t('detail.idPassport')} <span className="detail-required">*</span></label>
-                          <label className={`detail-upload-card ${files.tautotita.length ? 'has-file' : ''}`}>
-                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotita')} />
-                            <img src={idFront} alt={t('detail.idPassport')} className="detail-upload-card-icon" />
-                            <span className="detail-upload-card-label"><UploadIcon />{t('common.frontAndBack')}</span>
-                          </label>
-                          <FilePreviewList files={files.tautotita} field="tautotita" onRemove={removeFile} onPreview={setPreviewFile} />
-                        </div>
 
                         <div className="detail-form-group">
                           <label>{t('detail.afm')} <span className="detail-required">*</span></label>
@@ -680,16 +674,6 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             placeholder={t('detail.doyPlaceholder')}
                             required
                           />
-                        </div>
-
-                        <div className="detail-form-group">
-                          <label>{t('detail.billPhoto')} <span className="detail-required">*</span></label>
-                          <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
-                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
-                            <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
-                            <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
-                          </label>
-                          <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       </div>
 
@@ -733,23 +717,36 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             onChange={v => setDetailForm(prev => ({ ...prev, allagiOnomatos: v }))}
                           />
                         </div>
-                        {detailForm.allagiOnomatos && (!isProviderChange || isGas) && (
-                          <div className="detail-form-group">
-                            <label>{t('detail.status')} <span className="detail-required">*</span></label>
-                            <div className="detail-form-options">
-                              {IDIOTITA_OPTIONS.map(opt => (
-                                <button
-                                  key={opt.value}
-                                  type="button"
-                                  className={`detail-form-option-btn ${detailForm.idiotita === opt.value ? 'active' : ''}`}
-                                  onClick={() => setDetailForm(prev => ({ ...prev, idiotita: opt.value }))}
-                                >
-                                  {t(opt.labelKey)}
-                                </button>
-                              ))}
-                            </div>
+                        <div className="detail-form-group">
+                          <label>{t('detail.businessType')} <span className="detail-required">*</span></label>
+                          <div className="detail-form-options">
+                            {BUSINESS_TYPE_OPTIONS.map(opt => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                className={`detail-form-option-btn ${detailForm.tiposEpixeirisis === opt.value ? 'active' : ''}`}
+                                onClick={() => setDetailForm(prev => ({ ...prev, tiposEpixeirisis: opt.value }))}
+                              >
+                                {t(opt.labelKey)}
+                              </button>
+                            ))}
                           </div>
-                        )}
+                        </div>
+                        <div className="detail-form-group">
+                          <label>{t('detail.status')} <span className="detail-required">*</span></label>
+                          <div className="detail-form-options">
+                            {IDIOTITA_OPTIONS.map(opt => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                className={`detail-form-option-btn ${detailForm.idiotita === opt.value ? 'active' : ''}`}
+                                onClick={() => setDetailForm(prev => ({ ...prev, idiotita: opt.value }))}
+                              >
+                                {t(opt.labelKey)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                         {isIdioktitisE9 && (
                           <div className="detail-toggle-list">
                             <YesNoToggle
@@ -773,21 +770,6 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             )}
                           </div>
                         )}
-                        <div className="detail-form-group">
-                          <label>{t('detail.businessType')} <span className="detail-required">*</span></label>
-                          <div className="detail-form-options">
-                            {BUSINESS_TYPE_OPTIONS.map(opt => (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                className={`detail-form-option-btn ${detailForm.tiposEpixeirisis === opt.value ? 'active' : ''}`}
-                                onClick={() => setDetailForm(prev => ({ ...prev, tiposEpixeirisis: opt.value }))}
-                              >
-                                {t(opt.labelKey)}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
                       </div>
                     </div>
                   )}
@@ -796,16 +778,6 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                     <div className="detail-form">
                       <div className="detail-form-subsection">
                         <h5 className="detail-form-subtitle">{t('detail.personalInfo')}</h5>
-
-                        <div className="detail-form-group">
-                          <label>{t('detail.idPassport')} <span className="detail-required">*</span></label>
-                          <label className={`detail-upload-card ${files.tautotita.length ? 'has-file' : ''}`}>
-                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotita')} />
-                            <img src={idFront} alt={t('detail.idPassport')} className="detail-upload-card-icon" />
-                            <span className="detail-upload-card-label"><UploadIcon />{t('common.frontAndBack')}</span>
-                          </label>
-                          <FilePreviewList files={files.tautotita} field="tautotita" onRemove={removeFile} onPreview={setPreviewFile} />
-                        </div>
 
                         <div className="detail-form-group">
                           <label>{t('detail.afm')} <span className="detail-required">*</span></label>
@@ -830,26 +802,6 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                             placeholder={t('detail.doyPlaceholder')}
                             required
                           />
-                        </div>
-
-                        <div className="detail-form-group">
-                          <label>{t('detail.billPhoto')} <span className="detail-required">*</span></label>
-                          <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
-                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
-                            <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
-                            <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
-                          </label>
-                          <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
-                        </div>
-
-                        <div className="detail-form-group">
-                          <label>{t('detail.meterPhoto')}</label>
-                          <label className={`detail-upload-card ${files.metritis.length ? 'has-file' : ''}`}>
-                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritis')} />
-                            <img src={powerMeter} alt={t('detail.meterPhoto')} className="detail-upload-card-icon" />
-                            <span className="detail-upload-card-label"><UploadIcon />{t('detail.meterAndReadings')}</span>
-                          </label>
-                          <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} onPreview={setPreviewFile} />
                         </div>
                       </div>
 
@@ -889,75 +841,81 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
                         </div>
                       </div>
 
-                      {detailForm.allagiOnomatos && (!isProviderChange || isGas) && (
-                        <div className="detail-form-subsection">
-                          <div className="detail-form-group">
-                            <label>{t('detail.status')} <span className="detail-required">*</span></label>
-                            <div className="detail-form-options">
-                              {IDIOTITA_OPTIONS.map(opt => (
-                                <button
-                                  key={opt.value}
-                                  type="button"
-                                  className={`detail-form-option-btn ${detailForm.idiotita === opt.value ? 'active' : ''}`}
-                                  onClick={() => setDetailForm(prev => ({ ...prev, idiotita: opt.value }))}
-                                >
-                                  {t(opt.labelKey)}
-                                </button>
-                              ))}
-                            </div>
+                      <div className="detail-form-subsection">
+                        <div className="detail-form-group">
+                          <label>{t('detail.status')} <span className="detail-required">*</span></label>
+                          <div className="detail-form-options">
+                            {IDIOTITA_OPTIONS.map(opt => (
+                              <button
+                                key={opt.value}
+                                type="button"
+                                className={`detail-form-option-btn ${detailForm.idiotita === opt.value ? 'active' : ''}`}
+                                onClick={() => setDetailForm(prev => ({ ...prev, idiotita: opt.value }))}
+                              >
+                                {t(opt.labelKey)}
+                              </button>
+                            ))}
                           </div>
-                          {isIdioktitisE9 && (
-                            <div className="detail-toggle-list">
-                              <YesNoToggle
-                                label={t('detail.thirdPartyAssignment')}
-                                value={detailForm.paraxorisiTrito}
-                                onChange={v => setDetailForm(prev => ({ ...prev, paraxorisiTrito: v }))}
-                              />
-                              {isParaxorisi && (
-                                <YesNoToggle
-                                  label={t('detail.activeUde')}
-                                  value={detailForm.energoYde}
-                                  onChange={v => setDetailForm(prev => ({ ...prev, energoYde: v }))}
-                                />
-                              )}
-                              {isParaxorisi && detailForm.energoYde === false && (
-                                <YesNoToggle
-                                  label={t('detail.electrified')}
-                                  value={detailForm.ilektrodoteitai}
-                                  onChange={v => setDetailForm(prev => ({ ...prev, ilektrodoteitai: v }))}
-                                />
-                              )}
-                            </div>
-                          )}
                         </div>
-                      )}
+                        {isIdioktitisE9 && (
+                          <div className="detail-toggle-list">
+                            <YesNoToggle
+                              label={t('detail.thirdPartyAssignment')}
+                              value={detailForm.paraxorisiTrito}
+                              onChange={v => setDetailForm(prev => ({ ...prev, paraxorisiTrito: v }))}
+                            />
+                            {isParaxorisi && (
+                              <YesNoToggle
+                                label={t('detail.activeUde')}
+                                value={detailForm.energoYde}
+                                onChange={v => setDetailForm(prev => ({ ...prev, energoYde: v }))}
+                              />
+                            )}
+                            {isParaxorisi && detailForm.energoYde === false && (
+                              <YesNoToggle
+                                label={t('detail.electrified')}
+                                value={detailForm.ilektrodoteitai}
+                                onChange={v => setDetailForm(prev => ({ ...prev, ilektrodoteitai: v }))}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
                   {step === 2 && isProfessional && (
                     <div className="detail-form">
-                      {isProviderChange && (
-                        <>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">{t('detail.billPhoto')}</h5>
-                            <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
-                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
-                              <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
-                              <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
-                            </label>
-                            <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
-                          </div>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">{t('detail.meterPhoto')}</h5>
-                            <label className={`detail-upload-card ${files.metritis.length ? 'has-file' : ''}`}>
-                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritis')} />
-                              <img src={powerMeter} alt={t('detail.meterPhoto')} className="detail-upload-card-icon" />
-                              <span className="detail-upload-card-label"><UploadIcon />{t('detail.meterAndReadings')}</span>
-                            </label>
-                            <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} onPreview={setPreviewFile} />
-                          </div>
-                        </>
-                      )}
+                      <div className="detail-form-subsection">
+                        <h5 className="detail-form-subtitle">{t('detail.personalInfo')}</h5>
+                        <div className="detail-form-group">
+                          <label>{t('detail.billPhoto')} <span className="detail-required">*</span></label>
+                          <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
+                            <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
+                          </label>
+                          <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
+                        </div>
+                        <div className="detail-form-group">
+                          <label>{t('detail.idPassport')} <span className="detail-required">*</span></label>
+                          <label className={`detail-upload-card ${files.tautotita.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotita')} />
+                            <img src={idFront} alt={t('detail.idPassport')} className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label"><UploadIcon />{t('common.frontAndBack')}</span>
+                          </label>
+                          <FilePreviewList files={files.tautotita} field="tautotita" onRemove={removeFile} onPreview={setPreviewFile} />
+                        </div>
+                        <div className="detail-form-group">
+                          <label>{t('detail.meterPhoto')}</label>
+                          <label className={`detail-upload-card ${files.metritis.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritis')} />
+                            <img src={powerMeter} alt={t('detail.meterPhoto')} className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label"><UploadIcon />{t('detail.meterAndReadings')}</span>
+                          </label>
+                          <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} onPreview={setPreviewFile} />
+                        </div>
+                      </div>
                       {isProviderChange && detailForm.ofeilesPalioParoxou && (
                         <>
                           <div className="detail-form-subsection">
@@ -1091,34 +1049,36 @@ export default function PlanDetailSidebar({ isOpen, onClose, selectedPlan, formD
 
                   {step === 2 && !isProfessional && (
                     <div className="detail-form">
-                      {!hasStep2Content && (
-                        <p className="detail-step2-empty">
-                          {t('detail.noExtraDocs')}
-                        </p>
-                      )}
-
-                      {isProviderChange && (
-                        <>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">{t('detail.billPhoto')}</h5>
-                            <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
-                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
-                              <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
-                              <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
-                            </label>
-                            <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
-                          </div>
-                          <div className="detail-form-subsection">
-                            <h5 className="detail-form-subtitle">{t('detail.meterPhoto')}</h5>
-                            <label className={`detail-upload-card ${files.metritis.length ? 'has-file' : ''}`}>
-                              <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritis')} />
-                              <img src={powerMeter} alt={t('detail.meterPhoto')} className="detail-upload-card-icon" />
-                              <span className="detail-upload-card-label"><UploadIcon />{t('detail.meterAndReadings')}</span>
-                            </label>
-                            <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} onPreview={setPreviewFile} />
-                          </div>
-                        </>
-                      )}
+                      <div className="detail-form-subsection">
+                        <h5 className="detail-form-subtitle">{t('detail.personalInfo')}</h5>
+                        <div className="detail-form-group">
+                          <label>{t('detail.billPhoto')} <span className="detail-required">*</span></label>
+                          <label className={`detail-upload-card ${files.logariasmos.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('logariasmos')} />
+                            <img src={billFront} alt={t('detail.billPhoto')} className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label"><UploadIcon />{t('common.allPages')}</span>
+                          </label>
+                          <FilePreviewList files={files.logariasmos} field="logariasmos" onRemove={removeFile} onPreview={setPreviewFile} />
+                        </div>
+                        <div className="detail-form-group">
+                          <label>{t('detail.idPassport')} <span className="detail-required">*</span></label>
+                          <label className={`detail-upload-card ${files.tautotita.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('tautotita')} />
+                            <img src={idFront} alt={t('detail.idPassport')} className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label"><UploadIcon />{t('common.frontAndBack')}</span>
+                          </label>
+                          <FilePreviewList files={files.tautotita} field="tautotita" onRemove={removeFile} onPreview={setPreviewFile} />
+                        </div>
+                        <div className="detail-form-group">
+                          <label>{t('detail.meterPhoto')}</label>
+                          <label className={`detail-upload-card ${files.metritis.length ? 'has-file' : ''}`}>
+                            <input type="file" accept="image/*,.pdf,.heic,.heif,.webp" multiple onChange={handleFileChange('metritis')} />
+                            <img src={powerMeter} alt={t('detail.meterPhoto')} className="detail-upload-card-icon" />
+                            <span className="detail-upload-card-label"><UploadIcon />{t('detail.meterAndReadings')}</span>
+                          </label>
+                          <FilePreviewList files={files.metritis} field="metritis" onRemove={removeFile} onPreview={setPreviewFile} />
+                        </div>
+                      </div>
 
                       {isProviderChange && detailForm.ofeilesPalioParoxou && (
                         <>
