@@ -704,6 +704,33 @@
   color: var(--text-primary);
 }
 
+.charge-formula {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border-subtle, rgba(255,255,255,0.1));
+}
+
+.charge-formula-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-secondary, #cbd5e1);
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.charge-formula-text {
+  font-size: 0.72rem;
+  color: var(--text-muted, #94a3b8);
+  font-family: 'Inter', monospace;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.charge-formula-text strong {
+  color: var(--accent, #38bdf8);
+  font-weight: 700;
+}
+
 /* Scrollbar styling */
 .sidebar-content::-webkit-scrollbar {
   width: 3px;

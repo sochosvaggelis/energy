@@ -101,11 +101,23 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
   }, [localNightKwh, setFormData])
 
 
+  const allKeys = TARIFF_FILTERS.map(f => f.key)
+  const allSelected = activeFilters.size === allKeys.length
+
   const toggleFilter = (key) => {
     setActiveFilters(prev => {
+      // If all are selected (default state), switch to only this one
+      if (prev.size === allKeys.length) {
+        return new Set([key])
+      }
       const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
+      if (next.has(key)) {
+        next.delete(key)
+        // If none left, restore all
+        if (next.size === 0) return new Set(allKeys)
+      } else {
+        next.add(key)
+      }
       return next
     })
   }
@@ -129,12 +141,16 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
         const nightRate = resolvedNightPrice ?? resolvedPrice
         const dayCost = resolvedPrice * kWh
         const nightCost = nightRate * nightKwh
+        const subtotal = dayCost + nightCost + (plan.monthly_fee_eur ?? 0)
+        const vat = subtotal * 0.06
 
         return {
           ...plan,
           resolved_price: resolvedPrice,
           resolved_night_price: resolvedNightPrice,
-          monthlyCost: dayCost + nightCost + (plan.monthly_fee_eur ?? 0)
+          subtotal,
+          vat,
+          monthlyCost: subtotal + vat
         }
       })
       .filter(Boolean)
@@ -166,10 +182,10 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                       type="number"
                       min="0"
                       max="5000"
-                      value={kWh}
+                      value={kWh || ''}
                       onFocus={() => setShowDaySlider(true)}
                       onChange={(e) => {
-                        const val = Math.max(0, Math.min(5000, Number(e.target.value) || 0))
+                        const val = e.target.value === '' ? 0 : Math.max(0, Math.min(5000, Number(e.target.value)))
                         setFormData(prev => ({ ...prev, kwhConsumption: val }))
                       }}
                       className="sidebar-kwh-input"
@@ -202,10 +218,10 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                       type="number"
                       min="0"
                       max="5000"
-                      value={nightKwh}
+                      value={nightKwh || ''}
                       onFocus={() => setShowNightSlider(true)}
                       onChange={(e) => {
-                        const val = Math.max(0, Math.min(5000, Number(e.target.value) || 0))
+                        const val = e.target.value === '' ? 0 : Math.max(0, Math.min(5000, Number(e.target.value)))
                         setFormData(prev => ({ ...prev, nightKwhConsumption: val }))
                       }}
                       className="sidebar-kwh-input"
@@ -237,10 +253,10 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                 {TARIFF_FILTERS.map(f => (
                   <button
                     key={f.key}
-                    className={`tariff-filter-btn tariff-${f.color} ${activeFilters.has(f.key) ? 'active' : ''}`}
+                    className={`tariff-filter-btn tariff-${f.color} ${!allSelected && activeFilters.has(f.key) ? 'active' : ''}`}
                     onClick={() => toggleFilter(f.key)}
                   >
-                    {activeFilters.has(f.key) && <span className="tariff-filter-check">✓</span>}
+                    {!allSelected && activeFilters.has(f.key) && <span className="tariff-filter-check">✓</span>}
                     {t(f.labelKey)}
                   </button>
                 ))}
@@ -355,6 +371,10 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                                 <span className="charge-label">{t('price.fixedFeeLabel')}</span>
                                 <span className="charge-value">{(plan.monthly_fee_eur ?? 0).toFixed(2)} {t('price.perMonthUnit')}</span>
                               </li>
+                              <li className="charge-vat">
+                                <span className="charge-label">ΦΠΑ 6%</span>
+                                <span className="charge-value">{plan.vat.toFixed(2)} €</span>
+                              </li>
                               {plan.price_formula?.base_type === 'auto' && (
                                 <>
                                   <li className="charge-section-title">{t('price.variableParams')}</li>
@@ -384,6 +404,26 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
                                   )}
                                 </>
                               )}
+                              <li className="charge-formula">
+                                <span className="charge-formula-label">
+                                  (Τιμή/kWh × Ημερήσια kWh
+                                  {nightKwh > 0 && plan.resolved_night_price != null
+                                    ? ' + Νυχτ. Τιμή × Νυχτ. kWh'
+                                    : ''}
+                                  {(plan.monthly_fee_eur ?? 0) > 0 ? ' + Πάγιο' : ''}
+                                  ) + ΦΠΑ 6%
+                                </span>
+                                <span className="charge-formula-text">
+                                  ({plan.resolved_price.toFixed(4)} × {kWh}
+                                  {nightKwh > 0 && plan.resolved_night_price != null
+                                    ? ` + ${plan.resolved_night_price.toFixed(4)} × ${nightKwh}`
+                                    : ''}
+                                  {(plan.monthly_fee_eur ?? 0) > 0
+                                    ? ` + ${(plan.monthly_fee_eur).toFixed(2)}`
+                                    : ''}
+                                  ) × 1.06 = <strong>{plan.monthlyCost.toFixed(2)} €</strong>
+                                </span>
+                              </li>
                             </ul>
                           ) : (
                             <p className="plan-expanded-placeholder">{plan.provider_info || t('price.providerInfoPlaceholder')}</p>
