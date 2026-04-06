@@ -429,9 +429,9 @@ Google Fonts + FontAwesome CDN = tracking + single point of failure.
 - [x] **Fix `contact_time` mismatch** — Προστέθηκε `'afternoon'` στο RPC + εφαρμόστηκε στη βάση
 - [x] **Ενοποίηση SQL αρχείων** — Αφαιρέθηκαν RPCs από `supabase_rls_policies.sql`, μόνο `supabase_rpc_validated.sql` τα ορίζει
 - [ ] **CSP meta tags** — Πρόσθεσε Content-Security-Policy σε Frontend/index.html και Dashboard/index.html
-- [ ] **Rate limiting** — Τουλάχιστον client-side throttle (30sec cooldown). Ιδανικά reCAPTCHA v3
-- [ ] **`npm audit fix`** — Και στα δύο apps
-- [ ] **Verify `update_submission_details` access** — Αν δεν χρειάζεται anon access, κάνε REVOKE
+- [ ] **Rate limiting** — ~~Client-side throttle απορρίφθηκε~~ (θα έκλεινε real users που διορθώνουν στοιχεία). Σωστή λύση: Cloudflare Turnstile + Supabase Edge Function. Παραλείπεται προς το παρόν — το upsert-by-phone + server-side validation παρέχουν αρκετή προστασία για niche site. Επανεξέταση αν εμφανιστεί spam μετά το launch.
+- [x] **`npm audit fix`** — Και στα δύο apps
+- [x] **Verify `update_submission_details` access** — REVOKE FROM anon εφαρμόστηκε στη βάση
 
 ### SHOULD DO (Πρώτη εβδομάδα μετά launch)
 
