@@ -63,7 +63,7 @@ User (Browser)
 | Icons            | Font Awesome 6.5 (CDN + React pkg)  |
 | Fonts            | Plus Jakarta Sans (Google Fonts)    |
 | Styling          | Custom CSS with CSS variables       |
-| Deployment       | GitHub Pages                        |
+| Deployment       | Cloudflare Pages                    |
 
 ---
 
@@ -96,11 +96,11 @@ Swthrhs/
 │   │   └── lib/
 │   │       └── supabase.js          # Supabase client
 │   ├── index.html
-│   ├── vite.config.js           # base: '/swthrhs/', proxy to :3001
+│   ├── vite.config.js           # base: '/'
 │   ├── package.json
 │   └── .env                     # VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 │
-├── AdminDashboard/              # Staff portal
+├── SwthrhsDashboard/            # Staff portal
 │   ├── src/
 │   │   ├── App.jsx              # Auth gate + tab routing + role filtering
 │   │   ├── App.css
@@ -121,7 +121,7 @@ Swthrhs/
 │   │       ├── cache.js             # LocalStorage cache (5min TTL)
 │   │       └── formula.js           # Formula evaluation engine
 │   ├── index.html               # Includes Font Awesome CDN
-│   ├── vite.config.js           # base: '/SwthrhsDashboard/', port 5174
+│   ├── vite.config.js           # base: '/', port 5174
 │   ├── package.json
 │   └── .env                     # VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
 │
@@ -249,11 +249,11 @@ Swthrhs/
 
 ```javascript
 cacheGet(key)              // Returns data if not expired, null otherwise
-cacheSet(key, data, ttl)   // Stores with expiration (default 5 min)
+cacheSet(key, data, ttl)   // Stores with expiration (default 2 min)
 cacheInvalidate(...keys)   // Removes specific cache entries
 ```
 
-Storage key format: `cache_{key}` in localStorage.
+Storage key format: `admin_{key}` in sessionStorage (no PII stored).
 
 ### Formula Engine (lib/formula.js)
 
@@ -341,9 +341,9 @@ Functions:
 
 | Bucket   | Purpose                    | Access   |
 |----------|----------------------------|----------|
-| uploads  | Customer document uploads  | Public   |
+| uploads  | Customer document uploads  | Private (signed URLs, 1h TTL) |
 
-File path: `{submissionId}/{document_type}/{timestamp}_{randomId}.{extension}`
+File path: `uploads/{submissionId}/{docType}/{uuid}.{ext}`
 
 ### Row Level Security (RLS) Policies
 
@@ -384,7 +384,7 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...your-anon-key
 ```
 
-### Admin Dashboard (`AdminDashboard/.env`)
+### Admin Dashboard (`SwthrhsDashboard/.env`)
 ```
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...your-anon-key
@@ -406,7 +406,7 @@ npm run dev
 
 ### Admin Dashboard
 ```bash
-cd AdminDashboard
+cd SwthrhsDashboard
 npm install
 npm run dev
 # Runs on http://localhost:5174
@@ -419,25 +419,16 @@ Open two terminals and run each dev server.
 
 ## Deployment
 
-### Frontend (GitHub Pages)
-```bash
-cd Frontend
-npm run deploy
-# Builds and deploys to GitHub Pages at /swthrhs/
-```
+Hosted on **Cloudflare Pages**. Κάθε push στο `main` κάνει auto-deploy.
 
-Or via GitHub Actions on push to main.
-
-### Admin Dashboard (GitHub Pages)
-```bash
-cd AdminDashboard
-npm run build
-# Deploy dist/ to GitHub Pages at /SwthrhsDashboard/
-```
+| App | URL |
+|-----|-----|
+| Frontend | https://comparegroup.gr |
+| Admin Dashboard | https://admin.comparegroup.gr |
 
 ### Vite Base Paths
-- Frontend: `base: '/swthrhs/'`
-- Admin Dashboard: `base: '/SwthrhsDashboard/'`
+- Frontend: `base: '/'`
+- Admin Dashboard: `base: '/'`
 
 ---
 
@@ -596,7 +587,7 @@ SELECT * FROM public.staff WHERE user_id = (
 
 ### Deployed URLs
 
-| App              | Base Path              |
-|------------------|------------------------|
-| Frontend         | `/swthrhs/`            |
-| Admin Dashboard  | `/SwthrhsDashboard/`   |
+| App              | URL                              |
+|------------------|----------------------------------|
+| Frontend         | https://comparegroup.gr          |
+| Admin Dashboard  | https://admin.comparegroup.gr    |

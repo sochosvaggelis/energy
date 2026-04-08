@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(python:*)",
+      "Bash(del \"C:\\\\Users\\\\User\\\\ReactProjects\\\\Swthrhs\\\\GetData\\\\inspect_page.py\" \"C:\\\\Users\\\\User\\\\ReactProjects\\\\Swthrhs\\\\GetData\\\\page_source.html\")"
+    ]
+  }
+}

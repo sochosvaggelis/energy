@@ -97,10 +97,11 @@ function FileThumb({ pathOrUrl, label, index, onLightbox, resolveFileUrl }) {
   )
 }
 
-export default function CustomersTab({ user }) {
-  const [submissions, setSubmissions] = useState([])
-  const [statusOptions, setStatusOptions] = useState(DEFAULT_statusOptions)
-  const [loading, setLoading] = useState(true)
+export default function CustomersTab({ user, refreshKey }) {
+  const [submissions, setSubmissions] = useState(() => cacheGet(CACHE_KEY) ?? [])
+  const [statusOptions, setStatusOptions] = useState(null)
+  const [lockedStatuses, setLockedStatuses] = useState([])
+  const [loading, setLoading] = useState(() => !cacheGet(CACHE_KEY))
   const [search, setSearch] = useState('')
   const [error, setError] = useState(null)
   const [expandedId, setExpandedId] = useState(null)
@@ -111,6 +112,10 @@ export default function CustomersTab({ user }) {
   const [noteText, setNoteText] = useState('')
   const [notesSaving, setNotesSaving] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [statusChange, setStatusChange] = useState(null) // { id, oldStatus, newStatus }
+  const [statusComment, setStatusComment] = useState('')
+  const [statusSaving, setStatusSaving] = useState(false)
+  const [historyId, setHistoryId] = useState(null)
   const notesEndRef = useRef(null)
 
   const ROWS_PER_PAGE = 25
@@ -148,18 +153,22 @@ export default function CustomersTab({ user }) {
   }, {})
 
   useEffect(() => {
-    fetchSubmissions()
+    fetchSubmissions(refreshKey > 0)
     supabase
       .from('settings')
-      .select('value')
-      .eq('key', 'status_options')
-      .single()
+      .select('key, value')
+      .in('key', ['status_options', 'locked_statuses'])
       .then(({ data }) => {
-        if (data?.value) {
-          try { setStatusOptions(JSON.parse(data.value)) } catch {}
+        const statusRow = data?.find(r => r.key === 'status_options')
+        const lockedRow = data?.find(r => r.key === 'locked_statuses')
+        if (statusRow?.value) {
+          try { setStatusOptions(JSON.parse(statusRow.value)) } catch { setStatusOptions(DEFAULT_statusOptions) }
+        } else {
+          setStatusOptions(prev => prev ?? DEFAULT_statusOptions)
         }
+        try { setLockedStatuses(lockedRow ? JSON.parse(lockedRow.value) : []) } catch { setLockedStatuses([]) }
       })
-  }, [])
+  }, [refreshKey])
 
   // Realtime: auto-update when submissions change
   useEffect(() => {
@@ -206,21 +215,47 @@ export default function CustomersTab({ user }) {
     setLoading(false)
   }
 
-  async function updateStatus(id, newStatus) {
+  function requestStatusChange(id, newStatus) {
+    const sub = submissions.find(s => s.id === id)
+    const oldStatus = sub?.status || 'Νέο'
+    if (oldStatus === newStatus) return
+    setStatusChange({ id, oldStatus, newStatus })
+    setStatusComment('')
+  }
+
+  async function confirmStatusChange() {
+    if (!statusChange) return
+    setStatusSaving(true)
     setError(null)
+    const { id, oldStatus, newStatus } = statusChange
+    const sub = submissions.find(s => s.id === id)
+    const history = sub?.status_history || []
+    const author = user?.user_metadata?.display_name || user?.email || 'Άγνωστος'
+    const entry = {
+      from: oldStatus,
+      to: newStatus,
+      comment: statusComment.trim() || null,
+      author,
+      changed_at: new Date().toISOString()
+    }
+
+    const isLocking = lockedStatuses.includes(newStatus)
     const { data, error } = await supabase
       .from('submissions')
-      .update({ status: newStatus })
+      .update({ status: newStatus, status_history: [...history, entry], ...(isLocking ? { locked: true } : {}) })
       .eq('id', id)
       .select()
-    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); return }
-    logAction('update_status', { entity: 'submission', entityId: id, details: { status: newStatus } })
+    if (error) { setError('Προέκυψε σφάλμα. Δοκιμάστε ξανά.'); setStatusSaving(false); return }
+    logAction('update_status', { entity: 'submission', entityId: id, details: { status: newStatus, comment: entry.comment } })
     const row = data?.[0]
     if (row) {
       const updated = submissions.map(s => s.id === id ? row : s)
       setSubmissions(updated)
       cacheSet(CACHE_KEY, updated)
     }
+    setStatusChange(null)
+    setStatusComment('')
+    setStatusSaving(false)
   }
 
   async function addNote(id) {
@@ -349,7 +384,7 @@ export default function CustomersTab({ user }) {
             >
               Όλα <span className="pill-count">{submissions.length}</span>
             </button>
-            {statusOptions.map(s => (
+            {(statusOptions || []).map(s => (
               <button
                 key={s}
                 className={`ct-pill ${getStatusClass(s)} ${statusFilter === s ? 'active' : ''}`}
@@ -452,7 +487,14 @@ export default function CustomersTab({ user }) {
                           : '—'}
                       </td>
                       <td>
-                        <span className={`ct-status-badge ${getStatusClass(status)}`}>{status}</span>
+                        <span className={`ct-status-badge ${getStatusClass(status)}`}>
+                          {s.locked && (
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:'4px',verticalAlign:'middle'}}>
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                          )}
+                          {status}
+                        </span>
                       </td>
                       <td className="td-date" title={formatDate(s.submitted_at)}>{timeAgo(s.submitted_at)}</td>
                       <td className="td-notes">
@@ -571,10 +613,20 @@ export default function CustomersTab({ user }) {
                                 <select
                                   className={`status-select ${getStatusClass(status)}`}
                                   value={status}
-                                  onChange={e => { e.stopPropagation(); updateStatus(s.id, e.target.value) }}
+                                  onChange={e => { e.stopPropagation(); requestStatusChange(s.id, e.target.value) }}
                                 >
-                                  {statusOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                  {(statusOptions || []).map(opt => <option key={opt} value={opt}>{opt}</option>)}
                                 </select>
+                                {(s.status_history || []).length > 0 && (
+                                  <button
+                                    className="ct-history-btn"
+                                    onClick={e => { e.stopPropagation(); setHistoryId(historyId === s.id ? null : s.id) }}
+                                    title="Ιστορικό status"
+                                  >
+                                    <i className="fa-solid fa-clock-rotate-left"></i>
+                                    <span>{(s.status_history || []).length}</span>
+                                  </button>
+                                )}
                               </div>
                               <div className="ct-action-right">
                                 <span className="ct-submitted-date">
@@ -582,6 +634,32 @@ export default function CustomersTab({ user }) {
                                 </span>
                               </div>
                             </div>
+
+                            {/* Status history timeline */}
+                            {historyId === s.id && (s.status_history || []).length > 0 && (
+                              <div className="ct-history-section">
+                                <h4><i className="fa-solid fa-clock-rotate-left"></i> Ιστορικό Status</h4>
+                                <div className="ct-history-timeline">
+                                  {(s.status_history || []).map((h, i) => (
+                                    <div key={i} className="ct-history-entry">
+                                      <div className="ct-history-dot" />
+                                      <div className="ct-history-content">
+                                        <div className="ct-history-header">
+                                          <span className={`ct-status-badge ${getStatusClass(h.from)}`}>{h.from}</span>
+                                          <i className="fa-solid fa-arrow-right ct-history-arrow"></i>
+                                          <span className={`ct-status-badge ${getStatusClass(h.to)}`}>{h.to}</span>
+                                          <span className="ct-history-date">{formatDate(h.changed_at)}</span>
+                                        </div>
+                                        <div className="ct-history-meta">
+                                          <span className="ct-history-author"><i className="fa-solid fa-user"></i> {h.author}</span>
+                                        </div>
+                                        {h.comment && <p className="ct-history-comment">{h.comment}</p>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -625,6 +703,42 @@ export default function CustomersTab({ user }) {
           </button>
           <img src={lightbox} alt="Preview" onClick={e => e.stopPropagation()} />
         </div>
+      )}
+
+      {/* Status change modal */}
+      {statusChange && (
+        <>
+          <div className="notes-overlay" onClick={() => setStatusChange(null)} />
+          <div className="ct-status-modal">
+            <div className="ct-status-modal-header">
+              <h3>Αλλαγή Status</h3>
+              <button className="notes-close" onClick={() => setStatusChange(null)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="ct-status-modal-body">
+              <div className="ct-status-modal-change">
+                <span className={`ct-status-badge ${getStatusClass(statusChange.oldStatus)}`}>{statusChange.oldStatus}</span>
+                <i className="fa-solid fa-arrow-right"></i>
+                <span className={`ct-status-badge ${getStatusClass(statusChange.newStatus)}`}>{statusChange.newStatus}</span>
+              </div>
+              <textarea
+                className="ct-status-comment"
+                placeholder="Σχόλιο (προαιρετικό)..."
+                value={statusComment}
+                onChange={e => setStatusComment(e.target.value)}
+                rows={3}
+                autoFocus
+              />
+            </div>
+            <div className="ct-status-modal-footer">
+              <button className="btn-cancel" onClick={() => setStatusChange(null)}>Ακύρωση</button>
+              <button className="btn-primary" onClick={confirmStatusChange} disabled={statusSaving}>
+                {statusSaving ? <i className="fa-solid fa-spinner fa-spin"></i> : 'Αποθήκευση'}
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Notes sidebar */}
