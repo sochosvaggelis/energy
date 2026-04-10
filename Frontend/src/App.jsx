@@ -53,7 +53,7 @@ function App() {
       try {
         const { supabase } = await import('./lib/supabase')
         const [plansRes, settingsRes, providersRes] = await Promise.all([
-          supabase.from('plans').select('*, providers(name, adjustment_factor, logo_url)'),
+          supabase.from('plans').select('*, providers(name, adjustment_factor)'),
           supabase.from('settings').select('key, value'),
           supabase.from('providers').select('id, name, logo_url').order('name')
         ])
@@ -77,11 +77,13 @@ function App() {
         }
         setSettingsVars(vars)
 
+        const logoMap = Object.fromEntries((providersRes.data || []).map(p => [p.id, p.logo_url]))
+
         const flat = plansRes.data.map(plan => ({
           id: plan.id,
           provider: plan.providers.name,
           adjustment_factor: plan.providers.adjustment_factor,
-          provider_logo: plan.providers.logo_url,
+          provider_logo: logoMap[plan.provider_id] || null,
           provider_info: plan.info_text || '',
           service_type: plan.service_type,
           plan: plan.plan_name,
