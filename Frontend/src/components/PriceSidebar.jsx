@@ -125,7 +125,7 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
   const sortedPlans = useMemo(() => {
     if (!pricesData.length || kWh === 0) return []
 
-    return pricesData
+    const computed = pricesData
       .filter(plan => activeService === 'both' || plan.service_type === activeService)
       .filter(plan => activeFilters.size === 0 || activeFilters.has(plan.tariff_type))
       .map(plan => {
@@ -155,7 +155,13 @@ export default function PriceSidebar({ formData, setFormData, pricesData, settin
       })
       .filter(Boolean)
       .sort((a, b) => a.monthlyCost - b.monthlyCost)
-  }, [pricesData, settingsVars, kWh, nightKwh, activeFilters, activeService])
+
+    if (!currentProviderName) return computed
+
+    // Hide current provider's plans that appear in the global top 3
+    const top3Ids = new Set(computed.slice(0, 3).map(p => p.id))
+    return computed.filter(p => !(p.provider === currentProviderName && top3Ids.has(p.id)))
+  }, [pricesData, settingsVars, kWh, nightKwh, activeFilters, activeService, currentProviderName])
 
   return (
     <>
